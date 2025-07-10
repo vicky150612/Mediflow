@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import "../index.css";
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const PatientDashboard = () => {
     const [profile, setProfile] = useState(null);
@@ -35,7 +36,7 @@ const PatientDashboard = () => {
     if (!profile)
         return (
             <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-indigo-200">
-                <div className="text-xl text-indigo-700 font-semibold">Loading...</div>
+                <LoadingSpinner />
             </div>
         );
 
@@ -70,6 +71,12 @@ const PatientDashboard = () => {
                         className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition font-semibold shadow"
                     >
                         View Access List
+                    </button>
+                    <button
+                        onClick={() => navigate('/prescriptions')}
+                        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition font-semibold shadow"
+                    >
+                        View Prescriptions
                     </button>
                     <button
                         onClick={handleLogout}

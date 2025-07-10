@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '../components/LoadingSpinner';
 import "../index.css";
 
 const PatientFiles = () => {
@@ -11,6 +12,7 @@ const PatientFiles = () => {
     const [filename, setFilename] = useState('');
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadMessage, setUploadMessage] = useState('');
+    const [disabled, setDisabled] = useState(false);
 
 
     const fetchFiles = useCallback(async () => {
@@ -51,6 +53,7 @@ const PatientFiles = () => {
     };
 
     const handleUpload = async (e) => {
+        setDisabled(true);
         e.preventDefault();
         if (!uploadedFile || !filename) return;
         const formData = new FormData();
@@ -77,15 +80,34 @@ const PatientFiles = () => {
         } catch (err) {
             setUploadMessage('Upload failed: ' + err.message);
         }
+        setDisabled(false);
     };
 
     if (loading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-indigo-200">
-                <div className="text-xl text-indigo-700 font-semibold">Loading...</div>
+                <LoadingSpinner />
             </div>
         );
     }
+
+    const handleDelete = async (fileId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${backendUrl}/patient/file/${fileId}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (!res.ok) {
+                throw new Error('Delete failed');
+            }
+            await fetchFiles();
+        } catch (err) {
+            console.error('Error deleting file:', err);
+        }
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
@@ -104,16 +126,14 @@ const PatientFiles = () => {
                 <ul className="w-full divide-y divide-gray-200 mb-4">
                     {files.length === 0 && <li className="py-4 text-gray-400 text-center">No files uploaded yet.</li>}
                     {files.map(file => (
-                        <li key={file._id} className="flex justify-between items-center py-3 px-2 hover:bg-indigo-50 rounded">
-                            <span className="font-medium text-gray-800">{file.filename}</span>
-                            <a
-                                href={file.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-indigo-600 hover:underline text-sm font-semibold"
+                        <li key={file._id} className="flex justify-between items-center py-3 px-2 hover:bg-indigo-50 rounded" >
+                            <span className="font-medium text-gray-800 cursor-pointer" onClick={() => window.open(file.url, '_blank')}>{file.filename}</span>
+                            <button
+                                onClick={() => handleDelete(file._id)}
+                                className="text-red-600 hover:text-red-700 text-sm font-semibold"
                             >
-                                View
-                            </a>
+                                Delete
+                            </button>
                         </li>
                     ))}
                 </ul>
@@ -153,7 +173,8 @@ const PatientFiles = () => {
                                 </div>
                                 <button
                                     type="submit"
-                                    className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition font-semibold shadow mt-2"
+                                    className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition font-semibold shadow mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={disabled}
                                 >
                                     Upload
                                 </button>

@@ -11,8 +11,9 @@
   - Profile info (styled with Tailwind, improved layout)
   - Navigation to Files & Access List
 - **PatientFiles.jsx**
-  - View uploaded files (with styled list)
-  - Upload new files (modal dialog, notifications)
+  - View uploaded files (styled list, click filename to view)
+  - Upload new files (modal dialog, notifications, loading spinner, disabled upload button during upload)
+  - Delete uploaded files (delete button, instant update)
 - **PatientAccesslist.jsx**
   - Add doctor by ID (form with feedback)
   - Remove doctor (confirmation, instant update)
@@ -20,12 +21,13 @@
   - Doctor details preview modal (click doctor to view details)
 - **Backend Routes**
   - View own files
+  - Upload and delete files (`GET /files`, `DELETE /file/:fileId`)
   - Manage access list (add/remove doctor)
   - View own details
+  - View prescription history (`GET /prescription`)
 
 ### ❌ Missing / Left To Do
-- Editing or deleting uploaded files
-- Prescription history (UI & backend)
+- Editing uploaded files
 - Security enhancements (confirmation dialogs for sensitive actions, etc.)
 
 ---
@@ -37,22 +39,25 @@
   - Profile info (styled)
   - Search patient by ID (with error feedback)
   - Patient details modal (click to view details/files)
+  - Add prescription (form appears to the right of patient details/files in modal)
   - Logout functionality
 - **Backend Route**
   - Fetch patient details (if doctor is authorized)
+  - Add prescription for a patient (`POST /prescription`)
 
 ### ❌ Missing / Left To Do
 - Edit doctor profile (e.g., registration number)
 - Notifications when access is granted/revoked
-- Add prescription (UI & backend)
 
 ---
 
 ## 🔐 General System Issues
 - No Email verification or mobile verification
 - No activity log
+- Pdf upload is not working
 - No password reset/change functionality
 - No profile editing
+- No dark mode
 
 ---
 
@@ -113,7 +118,10 @@
 - Show **notifications** on:
   - Adding/removing doctor
   - File upload success/failure
-- **Loading indicators** during async actions
+- **Loading indicators** during async actions (file upload spinner, prescription list loading, etc.)
+- Disabled upload button during file upload
+- Improved feedback on file upload/delete and prescription actions
+- Responsive, modern UI for all patient and doctor views
 
 ### 6. Mobile Responsiveness
 - Ensure navigation adapts (e.g., hamburger menu)

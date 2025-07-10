@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import PrescriptionForm from '../components/PrescriptionForm';
 import "../index.css";
 
 const DoctorDashboard = () => {
@@ -112,36 +113,44 @@ const DoctorDashboard = () => {
                                     &times;
                                 </button>
                             </div>
-                            <div className="w-full px-8 py-6 flex flex-col gap-4">
-                                <div className="flex flex-col gap-1">
-                                    <div><span className="font-medium text-gray-700">Name:</span> {patient.name || 'N/A'}</div>
-                                    <div><span className="font-medium text-gray-700">Email:</span> {patient.email || 'N/A'}</div>
-                                    <div><span className="font-medium text-gray-700">ID:</span> {patient._id || 'N/A'}</div>
+                            <div className="w-full px-8 py-6 flex flex-col md:flex-row gap-8">
+                                {/* Left: Patient details and files */}
+                                <div className="flex-1 flex flex-col gap-4">
+                                    <div className="flex flex-col gap-1">
+                                        <div><span className="font-medium text-gray-700">Name:</span> {patient.name || 'N/A'}</div>
+                                        <div><span className="font-medium text-gray-700">Email:</span> {patient.email || 'N/A'}</div>
+                                        <div><span className="font-medium text-gray-700">ID:</span> {patient._id || 'N/A'}</div>
+                                    </div>
+                                    <hr className="my-2 border-gray-200" />
+                                    <div className="w-full">
+                                        <h3 className="font-semibold text-indigo-700 mb-2 flex items-center gap-2">
+                                            Files
+                                        </h3>
+                                        <ul className="divide-y divide-gray-200 rounded-lg overflow-hidden">
+                                            {patient.files && patient.files.length > 0 ? (
+                                                patient.files.map((item, index) => (
+                                                    <li key={index} className="py-2 px-3 flex justify-between items-center cursor-pointer hover:bg-indigo-50 transition">
+                                                        <span className="text-gray-800 truncate max-w-xs">{item.filename}</span>
+                                                        <a
+                                                            href={item.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-indigo-600 text-sm font-semibold px-3 py-1 rounded hover:bg-indigo-100 transition"
+                                                        >
+                                                            View
+                                                        </a>
+                                                    </li>
+                                                ))
+                                            ) : (
+                                                <li className="py-2 text-gray-400 px-3">No files found.</li>
+                                            )}
+                                        </ul>
+                                    </div>
                                 </div>
-                                <hr className="my-2 border-gray-200" />
-                                <div className="w-full">
-                                    <h3 className="font-semibold text-indigo-700 mb-2 flex items-center gap-2">
-                                        Files
-                                    </h3>
-                                    <ul className="divide-y divide-gray-200 rounded-lg overflow-hidden">
-                                        {patient.files && patient.files.length > 0 ? (
-                                            patient.files.map((item, index) => (
-                                                <li key={index} className="py-2 px-3 flex justify-between items-center cursor-pointer hover:bg-indigo-50 transition">
-                                                    <span className="text-gray-800 truncate max-w-xs">{item.filename}</span>
-                                                    <a
-                                                        href={item.url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-indigo-600 text-sm font-semibold px-3 py-1 rounded hover:bg-indigo-100 transition"
-                                                    >
-                                                        View
-                                                    </a>
-                                                </li>
-                                            ))
-                                        ) : (
-                                            <li className="py-2 text-gray-400 px-3">No files found.</li>
-                                        )}
-                                    </ul>
+                                {/* Right: Prescription Form */}
+                                <div className="w-full md:w-1/2 xl:w-1/3">
+                                    <h3 className="font-semibold text-indigo-700 mb-2 flex items-center gap-2">Add Prescription</h3>
+                                    <PrescriptionForm patientId={patient._id} onSuccess={() => setShowPatientModal(false)} />
                                 </div>
                             </div>
                         </div>

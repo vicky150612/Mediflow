@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import PatientFiles from "./pages/PatientFiles";
 import PatientAccesslist from "./pages/PatientAccesslist";
+import PatientPrescriptions from "./pages/PatientPrescriptions";
 
 const root = document.getElementById("root");
 
@@ -19,6 +20,7 @@ ReactDOM.createRoot(root).render(
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/files" element={<PatientFiles />} />
       <Route path="/accesslist" element={<PatientAccesslist />} />
+      <Route path="/prescriptions" element={<PatientPrescriptions />} />
     </Routes>
   </BrowserRouter>
 );

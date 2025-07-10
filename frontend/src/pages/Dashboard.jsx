@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DoctorDashboard from './DoctorDashboard';
 import PatientDashboard from './PatientDashboard';
-
+import LoadingSpinner from '../components/LoadingSpinner';
 
 
 const Dashboard = () => {
@@ -34,7 +34,13 @@ const Dashboard = () => {
         fetchRole();
     });
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-indigo-200">
+                <LoadingSpinner />
+            </div>
+        );
+    };
     if (role === 'doctor') return <DoctorDashboard />;
     if (role === 'patient') return <PatientDashboard />;
     navigate('/login');

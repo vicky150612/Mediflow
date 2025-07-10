@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import "../index.css";
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const PatientAccesslist = () => {
     const backendUrl = import.meta.env.VITE_Backend_URL;
@@ -140,7 +141,7 @@ const PatientAccesslist = () => {
                 </form>
                 {error && <p className="mb-4 text-red-600 bg-red-50 border border-red-200 rounded p-2 w-full text-center">{error}</p>}
                 {loading ? (
-                    <div className="text-indigo-700 text-center w-full">Loading...</div>
+                    <LoadingSpinner />
                 ) : (
                     <ul className="w-full divide-y divide-gray-200">
                         {list.length === 0 && <li className="py-4 text-gray-400 text-center">No doctors have access yet.</li>}

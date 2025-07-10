@@ -6,6 +6,7 @@ import { ObjectId } from 'mongodb';
 
 const router = express.Router();
 
+// Get files
 router.get("/files", authMiddleware, async (req, res) => {
     try {
         const db = await connectDB();
@@ -31,6 +32,28 @@ router.get("/files", authMiddleware, async (req, res) => {
         });
     }
 });
+
+// Delete file
+router.delete("/file/:fileId", authMiddleware, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const userId = req.user.id;
+        const fileId = req.params.fileId;
+        await db.collection('files').deleteOne({ _id: new ObjectId(fileId), user: userId });
+        res.status(200).json({
+            success: true,
+            message: 'File deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete file',
+            error: error.message
+        });
+    }
+});
+
 
 
 // Get my access list 
