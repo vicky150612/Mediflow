@@ -10,6 +10,7 @@ import loginRoutes from './routes/LoginRoutes.js';
 import signupRoutes from './routes/SignupRoutes.js';
 import patientRoutes from './routes/PatientRoutes.js';
 import uploadRoutes from './routes/UploadRoutes.js';
+import doctorRoutes from './routes/DoctorRoutes.js';
 
 // Import middleware
 import { authMiddleware } from './middleware/authMiddleware.js';
@@ -59,6 +60,7 @@ app.use('/login', loginRoutes);
 app.use('/signup', signupRoutes);
 app.use('/patient', patientRoutes);
 app.use('/upload', uploadRoutes);
+app.use('/doctor', doctorRoutes);
 
 // Start server
 app.listen(PORT, () => {

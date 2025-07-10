@@ -2,40 +2,41 @@
 
 ---
 
+**Note:** The UI currently maybe changed completely according to the requirements later. 
+
 ## 🧑‍⚕️ Patient Functionality
 
 ### ✅ Implemented
-- **Dashboard** with profile info and navigation to:
-  - Files
-  - Access list
+- **Modern Dashboard** with:
+  - Profile info (styled with Tailwind, improved layout)
+  - Navigation to Files & Access List
 - **PatientFiles.jsx**
-  - View uploaded files
-  - Upload new files
+  - View uploaded files (with styled list)
+  - Upload new files (modal dialog, notifications)
 - **PatientAccesslist.jsx**
-  - Add doctor by ID
-  - Remove doctor
-  - View current access list
+  - Add doctor by ID (form with feedback)
+  - Remove doctor (confirmation, instant update)
+  - View current access list (styled)
+  - Doctor details preview modal (click doctor to view details)
 - **Backend Routes**
   - View own files
   - Manage access list (add/remove doctor)
   - View own details
 
 ### ❌ Missing / Left To Do
-- Better error handling and feedback
-- UI for:
-  - Editing or deleting files
-  - Viewing doctor details before adding
-- Confirmation dialogs (e.g., before removing a doctor)
-- Security enhancements
+- Editing or deleting uploaded files
+- Prescription history (UI & backend)
+- Security enhancements (confirmation dialogs for sensitive actions, etc.)
 
 ---
 
 ## 🩺 Doctor Functionality
 
 ### ✅ Implemented
-- **Dashboard** with:
-  - Profile info
-  - Search patient by ID (if authorized)
+- **Modern Dashboard** with:
+  - Profile info (styled)
+  - Search patient by ID (with error feedback)
+  - Patient details modal (click to view details/files)
   - Logout functionality
 - **Backend Route**
   - Fetch patient details (if doctor is authorized)
@@ -43,11 +44,12 @@
 ### ❌ Missing / Left To Do
 - Edit doctor profile (e.g., registration number)
 - Notifications when access is granted/revoked
-- Improved UI/error handling for unauthorized access
+- Add prescription (UI & backend)
 
 ---
 
 ## 🔐 General System Issues
+- No Email verification or mobile verification
 - No activity log
 - No password reset/change functionality
 - No profile editing
