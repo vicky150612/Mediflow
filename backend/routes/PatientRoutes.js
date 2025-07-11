@@ -2,7 +2,7 @@ import express from 'express';
 import { connectDB } from '../db.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { ObjectId } from 'mongodb';
-
+import cloudinary from 'cloudinary';
 
 const router = express.Router();
 
@@ -39,6 +39,17 @@ router.delete("/file/:fileId", authMiddleware, async (req, res) => {
         const db = await connectDB();
         const userId = req.user.id;
         const fileId = req.params.fileId;
+        const file = await db.collection('files').findOne({ _id: new ObjectId(fileId), user: userId });
+        if (!file) {
+            return res.status(404).json({
+                success: false,
+                message: 'File not found'
+            });
+        }
+        const publicId = file.public_id;
+        cloudinary.uploader.destroy(publicId, function (error, result) {
+            console.log(result, error);
+        });
         await db.collection('files').deleteOne({ _id: new ObjectId(fileId), user: userId });
         res.status(200).json({
             success: true,

@@ -41,13 +41,14 @@
   - Patient details modal (click to view details/files)
   - Add prescription (form appears to the right of patient details/files in modal)
   - Logout functionality
+- **Signup Page**
+  - Two-step email verification: code is sent to user's email and must be entered before registration completes
 - **Backend Route**
   - Fetch patient details (if doctor is authorized)
   - Add prescription for a patient (`POST /prescription`)
 
 ### ❌ Missing / Left To Do
 - Edit doctor profile (e.g., registration number)
-- Notifications when access is granted/revoked
 
 ---
 
@@ -64,14 +65,15 @@
 ## 🧭 Current User Navigation
 
 ### 🌐 Routes (`main.jsx`)
-| Route        | Description                                     |
-|--------------|-------------------------------------------------|
-| `/`          | App landing page                                |
-| `/login`     | Login page                                      |
-| `/signup`    | Signup page                                     |
-| `/dashboard` | Auto-redirect to Doctor or Patient dashboard    |
-| `/files`     | Patient file management (Patient only)          |
-| `/accesslist`| Manage access list (Patient only)               |
+| Route          | Description                                     |
+|----------------|-------------------------------------------------|
+| `/`            | App landing page                                |
+| `/login`       | Login page                                      |
+| `/signup`      | Signup page                                     |
+| `/dashboard`   | Auto-redirect to Doctor or Patient dashboard    |
+| `/files`       | Patient file management (Patient only)          |
+| `/accesslist`  | Manage access list (Patient only)               |
+| `/prescription`| Manage prescription (Doctor only)               |
 
 ### 🎯 Dashboard Logic
 - After login, user is routed to `/dashboard`:
