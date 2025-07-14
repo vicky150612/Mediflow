@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DoctorDashboard from './DoctorDashboard';
 import PatientDashboard from './PatientDashboard';
+import ReceptionistDashboard from './ReceptionistDashboard';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 
@@ -43,6 +44,7 @@ const Dashboard = () => {
     };
     if (role === 'doctor') return <DoctorDashboard />;
     if (role === 'patient') return <PatientDashboard />;
+    if (role === 'receptionist') return <ReceptionistDashboard />;
     navigate('/login');
     return null;
 };

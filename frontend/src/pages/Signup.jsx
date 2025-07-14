@@ -99,7 +99,7 @@ const Signup = () => {
                 <p className="mb-6 text-gray-500 text-sm">Sign up to get started with Mediflow</p>
                 {step === 1 && (
                     <form onSubmit={handleSignupSubmit} className="w-full flex flex-col gap-4">
-                        <div className="flex gap-6 mb-2">
+                                                <div className="flex gap-6 mb-2 flex-wrap">
                             <label className="flex items-center cursor-pointer">
                                 <input
                                     type="radio"
@@ -121,6 +121,17 @@ const Signup = () => {
                                     className="accent-indigo-600 mr-2"
                                 />
                                 <span className="text-gray-700">Doctor</span>
+                            </label>
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name="role"
+                                    value="receptionist"
+                                    checked={role === 'receptionist'}
+                                    onChange={() => setRole('receptionist')}
+                                    className="accent-indigo-600 mr-2"
+                                />
+                                <span className="text-gray-700">Receptionist</span>
                             </label>
                         </div>
                         <div>

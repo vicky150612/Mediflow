@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import PatientFiles from "./pages/PatientFiles";
 import PatientAccesslist from "./pages/PatientAccesslist";
 import PatientPrescriptions from "./pages/PatientPrescriptions";
+import Profile from "./pages/Profile";
 
 const root = document.getElementById("root");
 
@@ -21,6 +22,7 @@ ReactDOM.createRoot(root).render(
       <Route path="/files" element={<PatientFiles />} />
       <Route path="/accesslist" element={<PatientAccesslist />} />
       <Route path="/prescriptions" element={<PatientPrescriptions />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   </BrowserRouter>
 );

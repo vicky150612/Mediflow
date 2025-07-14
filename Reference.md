@@ -1,4 +1,4 @@
-# Patient and Doctor Portal Review & Suggestions
+# Patient, Doctor, and Receptionist Portal Review & Suggestions
 
 ---
 
@@ -28,6 +28,7 @@
 
 ### ❌ Missing / Left To Do
 - Editing uploaded files
+- AI agent
 - Security enhancements (confirmation dialogs for sensitive actions, etc.)
 
 ---
@@ -48,14 +49,27 @@
   - Add prescription for a patient (`POST /prescription`)
 
 ### ❌ Missing / Left To Do
-- Edit doctor profile (e.g., registration number)
+- Edit doctor profile
+
+---
+
+## 🛎️ Receptionist Functionality
+
+### ✅ Implemented
+- **Modern Dashboard** with:
+  - Profile info
+  - Gets patient requests sent by doctors(Socket.io)
+  - Mark requests as done(Socket.io) which also updated the db
+
+
+### ❌ Missing / Left To Do
+- Billing (Optional)
+- Supports voice dictation for faster note-taking
 
 ---
 
 ## 🔐 General System Issues
-- No Email verification or mobile verification
 - No activity log
-- Pdf upload is not working
 - No password reset/change functionality
 - No profile editing
 - No dark mode
@@ -74,6 +88,7 @@
 | `/files`       | Patient file management (Patient only)          |
 | `/accesslist`  | Manage access list (Patient only)               |
 | `/prescription`| Manage prescription (Doctor only)               |
+| `/reception`   | Manage reception (Receptionist only)            |
 
 ### 🎯 Dashboard Logic
 - After login, user is routed to `/dashboard`:

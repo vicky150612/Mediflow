@@ -21,11 +21,15 @@ router.post('/', async (req, res) => {
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+        if (user.role === 'doctor') {
+            const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role, receptionist: user.receptionist }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            return res.status(200).json({ message: 'Login successful', token, user: { id: user._id, name: user.name, email: user.email, role: user.role, registrationNumber: user.registrationNumber, receptionist: user.receptionist } });
+        }
         const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.status(200).json({ message: 'Login successful', token, user: { id: user._id, name: user.name, email: user.email, role: user.role, registrationNumber: user.registrationNumber } });
+        return res.status(200).json({ message: 'Login successful', token, user: { id: user._id, name: user.name, email: user.email, role: user.role, registrationNumber: user.registrationNumber } });
     } catch (error) {
         console.error('Error during login:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 });
 

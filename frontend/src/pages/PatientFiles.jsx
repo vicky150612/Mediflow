@@ -112,13 +112,13 @@ const PatientFiles = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
             <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-2xl flex flex-col items-center">
-                <h1 className="text-3xl font-bold text-indigo-700 mb-2">Your Files</h1>
-                <p className="mb-6 text-gray-500 text-sm">View and manage your uploaded files</p>
+                <h1 className="text-3xl font-bold text-indigo-700 mb-2">Your Reports</h1>
+                <p className="mb-6 text-gray-500 text-sm">View and manage your uploaded reports</p>
                 <button
                     onClick={() => setShowModal(true)}
                     className="mb-6 bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition font-semibold shadow"
                 >
-                    Upload File
+                    Upload Report
                 </button>
                 {uploadMessage && (
                     <div className={`mb-4 w-full text-center rounded p-2 ${uploadMessage.includes('success') ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>{uploadMessage}</div>
@@ -148,7 +148,7 @@ const PatientFiles = () => {
                             >
                                 &times;
                             </button>
-                            <h2 className="text-lg font-bold mb-4 text-indigo-700">Upload File</h2>
+                            <h2 className="text-lg font-bold mb-4 text-indigo-700">Upload Report</h2>
                             <form onSubmit={handleUpload} className="w-full flex flex-col gap-4">
                                 <div>
                                     <label htmlFor="filename" className="block text-gray-700 mb-1 font-medium">File Name</label>
@@ -166,6 +166,7 @@ const PatientFiles = () => {
                                     <input
                                         type="file"
                                         id="file"
+                                        accept="image/*,application/pdf"
                                         onChange={handleFileChange}
                                         className="w-full"
                                         required

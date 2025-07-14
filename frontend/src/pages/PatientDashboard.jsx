@@ -64,7 +64,7 @@ const PatientDashboard = () => {
                         onClick={() => navigate('/files')}
                         className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition font-semibold shadow"
                     >
-                        View Files
+                        View Reports
                     </button>
                     <button
                         onClick={() => navigate('/accesslist')}

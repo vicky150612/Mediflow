@@ -9,11 +9,18 @@ const DoctorDashboard = () => {
     const [search, setSearch] = useState('');
     const [patient, setPatient] = useState(null);
     const [showPatientModal, setShowPatientModal] = useState(false);
+    const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
     const [error, setError] = useState('');
+    const [prescription, setPrescription] = useState('');
+    const [profileLoading, setProfileLoading] = useState(true);
+    const [patientLoading, setPatientLoading] = useState(false);
+
     useEffect(() => {
+        setProfileLoading(true);
         const token = localStorage.getItem('token');
-        if (!localStorage.getItem('token')) {
+        if (!token) {
             navigate('/login');
+            return;
         }
         fetch(`${import.meta.env.VITE_Backend_URL}/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
@@ -27,13 +34,17 @@ const DoctorDashboard = () => {
                 console.error('Could not load profile');
                 localStorage.removeItem('token');
                 navigate('/login');
-            });
+            })
+            .finally(() => setProfileLoading(false));
     }, [navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setPatient(null);
+        setShowPatientModal(false);
+        setShowPrescriptionModal(false);
+        setPatientLoading(true);
         try {
             const res = await fetch(`${import.meta.env.VITE_Backend_URL}/patient/details/?patientId=${search}`, {
                 method: 'GET',
@@ -43,26 +54,54 @@ const DoctorDashboard = () => {
             if (!res.ok) {
                 setError(data.message || 'Failed to fetch patient details');
                 setPatient(null);
+                setShowPatientModal(false);
+                setShowPrescriptionModal(false);
+                setPatientLoading(false);
                 return;
             }
             setPatient(data.data);
+            setError('');
         } catch (error) {
             setError(error.message || 'Network error');
             setPatient(null);
+            setShowPatientModal(false);
+            setShowPrescriptionModal(false);
+        } finally {
+            setPatientLoading(false);
         }
-    }
+    };
+
+    const handleOpenPatientModal = () => {
+        setShowPatientModal(true);
+        setShowPrescriptionModal(false);
+    };
+    const handleOpenPrescriptionModal = () => {
+        setShowPrescriptionModal(true);
+        setShowPatientModal(false);
+    };
+    const handleCloseModals = () => {
+        setShowPatientModal(false);
+        setShowPrescriptionModal(false);
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
             <div className="bg-white shadow-xl rounded-xl p-10 w-full max-w-2xl flex flex-col items-center">
                 <h1 className="text-3xl font-bold text-indigo-700 mb-2">Doctor Dashboard</h1>
-                {profile && (
+                {profileLoading ? (
                     <div className="w-full bg-indigo-50 rounded-lg p-4 mb-6 flex flex-col gap-2">
-                        <h2 className="text-xl font-semibold text-indigo-900 mb-1">Welcome, Dr. {profile.name}</h2>
-                        <div className="flex flex-col md:flex-row md:gap-8">
-                            <span className="text-gray-700">Email: <span className="text-gray-900">{profile.email}</span></span>
-                            <span className="text-gray-700">ID: <span className="text-gray-900">{profile.id}</span></span>
-                        </div>
+                        <h2 className="text-xl font-semibold text-indigo-900 mb-1">Loading...</h2>
                     </div>
+                ) : (
+                    profile && (
+                        <div className="w-full bg-indigo-50 rounded-lg p-4 mb-6 flex flex-col gap-2">
+                            <h2 className="text-xl font-semibold text-indigo-900 mb-1">Welcome, Dr. {profile.name}</h2>
+                            <div className="flex flex-col md:flex-row md:gap-8">
+                                <span className="text-gray-700">Email: <span className="text-gray-900">{profile.email}</span></span>
+                                <span className="text-gray-700">ID: <span className="text-gray-900">{profile.id}</span></span>
+                            </div>
+                        </div>
+                    )
                 )}
                 <div className="w-full mb-6">
                     <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-3 items-center">
@@ -82,16 +121,30 @@ const DoctorDashboard = () => {
                     </form>
                 </div>
                 {error && <p className="mb-4 text-red-600 bg-red-50 border border-red-200 rounded p-2 w-full text-center">{error}</p>}
-                {patient && (
-                    <div
-                        className="w-full bg-blue-50 rounded-lg p-4 mb-6 cursor-pointer hover:bg-blue-100 transition"
-                        onClick={() => setShowPatientModal(true)}
-                        title="View patient details"
-                    >
+                {patientLoading ? (
+                    <div className="w-full flex justify-center items-center mb-6">
+                        <svg className="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                    </div>
+                ) : patient && !error && (
+                    <div className="w-full bg-blue-50 rounded-lg p-4 mb-6 transition">
                         <div className="flex flex-col md:flex-row md:gap-8 mb-2">
                             <span className="text-gray-700">Name: <span className="text-gray-900">{patient.name}</span></span>
                             <span className="text-gray-700">Email: <span className="text-gray-900">{patient.email}</span></span>
                             <span className="text-gray-700">ID: <span className="text-gray-900">{patient._id}</span></span>
+                        </div>
+                        <div className="flex gap-4 mt-2">
+                            <button
+                                onClick={handleOpenPatientModal}
+                                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition font-semibold shadow"
+                            >
+                                View Details
+                            </button>
+                            <button
+                                onClick={handleOpenPrescriptionModal}
+                                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition font-semibold shadow"
+                            >
+                                Add Prescription
+                            </button>
                         </div>
                     </div>
                 )}
@@ -114,7 +167,6 @@ const DoctorDashboard = () => {
                                 </button>
                             </div>
                             <div className="w-full px-8 py-6 flex flex-col md:flex-row gap-8">
-                                {/* Left: Patient details and files */}
                                 <div className="flex-1 flex flex-col gap-4">
                                     <div className="flex flex-col gap-1">
                                         <div><span className="font-medium text-gray-700">Name:</span> {patient.name || 'N/A'}</div>
@@ -147,14 +199,28 @@ const DoctorDashboard = () => {
                                         </ul>
                                     </div>
                                 </div>
-                                {/* Right: Prescription Form */}
-                                <div className="w-full md:w-1/2 xl:w-1/3">
-                                    <h3 className="font-semibold text-indigo-700 mb-2 flex items-center gap-2">Add Prescription</h3>
-                                    <PrescriptionForm patientId={patient._id} onSuccess={() => setShowPatientModal(false)} />
-                                </div>
                             </div>
                         </div>
                     </div>
+                )}
+                {showPrescriptionModal && patient && (
+                    <PrescriptionForm
+                        onSuccess={() => setShowPrescriptionModal(false)}
+                        onClose={() => setShowPrescriptionModal(false)}
+                        receptionistId={profile.receptionistId}
+                        doctorDetails={{
+                            name: profile.name,
+                            email: profile.email,
+                            id: profile.id,
+                            receptionist: profile.receptionist,
+                        }}
+                        patientDetails={{
+                            name: patient.name,
+                            email: patient.email,
+                            id: patient._id,
+                        }}
+                        setPrescription={setPrescription}
+                    />
                 )}
                 <button
                     onClick={() => {
