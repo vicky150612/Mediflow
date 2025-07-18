@@ -2,7 +2,11 @@
 
 ---
 
-**Note:** The UI currently maybe changed completely according to the requirements later. 
+**Note:** Shadcn has been integrated. 
+UI changes include
+- Login Page
+- Doctor Dashboard
+- Receptionist Dashboard
 
 ## 🧑‍⚕️ Patient Functionality
 
@@ -25,28 +29,32 @@
   - Manage access list (add/remove doctor)
   - View own details
   - View prescription history (`GET /prescription`)
-
 ### ❌ Missing / Left To Do
-- Editing uploaded files
+- Edit uploaded files
 - AI agent
-- Security enhancements (confirmation dialogs for sensitive actions, etc.)
+- Security enhancements (confirmation dialogs, password reset)
+- Profile editing
 
 ---
 
 ## 🩺 Doctor Functionality
 
 ### ✅ Implemented
-- **Modern Dashboard** with:
-  - Profile info (styled)
-  - Search patient by ID (with error feedback)
-  - Patient details modal (click to view details/files)
-  - Add prescription (form appears to the right of patient details/files in modal)
-  - Logout functionality
+- **Modern Dashboard** (Tailwind, Shadcn)
+  - Profile info
+  - Search patient by ID (error feedback, loading states)
+  - Patient details modal (unified, improved UI)
+  - Add prescription
+  - Select receptionist and send patient details (real-time via Socket.IO)
+  - See when requests are marked as done (real-time feedback)
+  - Logout
 - **Signup Page**
-  - Two-step email verification: code is sent to user's email and must be entered before registration completes
-- **Backend Route**
-  - Fetch patient details (if doctor is authorized)
-  - Add prescription for a patient (`POST /prescription`)
+  - Two-step email verification (frontend flow)
+- **Profile Page**
+  - Change assigned receptionist (with feedback)
+- **Backend**
+  - Real-time Socket.IO events for sending/receiving requests
+  - Fetch patient details, add prescription
 
 ### ❌ Missing / Left To Do
 - Edit doctor profile
@@ -56,14 +64,19 @@
 ## 🛎️ Receptionist Functionality
 
 ### ✅ Implemented
-- **Modern Dashboard** with:
+- **Modern Dashboard** (Tailwind, Shadcn)
   - Profile info
-  - Gets patient requests sent by doctors(Socket.io)
-  - Mark requests as done(Socket.io) which also updated the db
-
+  - Live list of incoming requests from doctors (Socket.IO)
+  - Mark requests as done (real-time, removes from list, notifies doctor)
+  - View profile, logout
+- **Socket.IO**
+  - Auto-registers receptionist, handles all real-time events
+- **General**
+  - Unified modal/dialog UI
+  - Mobile responsive
 
 ### ❌ Missing / Left To Do
-- Billing (Optional)
+- Billing (optional)
 - Supports voice dictation for faster note-taking
 
 ---
@@ -73,6 +86,10 @@
 - No password reset/change functionality
 - No profile editing
 - No dark mode
+- No security enhancements (confirmation dialogs for sensitive actions, etc.)
+- No landing page
+- No AI
+- No voice recording
 
 ---
 

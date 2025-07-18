@@ -9,13 +9,14 @@ import PatientFiles from "./pages/PatientFiles";
 import PatientAccesslist from "./pages/PatientAccesslist";
 import PatientPrescriptions from "./pages/PatientPrescriptions";
 import Profile from "./pages/Profile";
+import LandingPage from "./pages/LandingPage";
 
 const root = document.getElementById("root");
 
 ReactDOM.createRoot(root).render(
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<App />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/dashboard" element={<Dashboard />} />

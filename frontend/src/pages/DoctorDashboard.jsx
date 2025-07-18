@@ -1,5 +1,28 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+    Search,
+    User,
+    FileText,
+    Plus,
+    Eye,
+    Mail,
+    IdCard,
+    AlertCircle,
+    Stethoscope,
+    Calendar,
+    LogOut,
+} from "lucide-react";
+import LoadingSpinner from "../components/LoadingSpinner";
 import PrescriptionForm from '../components/PrescriptionForm';
 import "../index.css";
 
@@ -71,166 +94,240 @@ const DoctorDashboard = () => {
         }
     };
 
-    const handleOpenPatientModal = () => {
-        setShowPatientModal(true);
-        setShowPrescriptionModal(false);
-    };
-    const handleOpenPrescriptionModal = () => {
-        setShowPrescriptionModal(true);
-        setShowPatientModal(false);
-    };
-    const handleCloseModals = () => {
-        setShowPatientModal(false);
-        setShowPrescriptionModal(false);
-    };
+
+    if (profileLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+                <Card className="w-full max-w-md">
+                    <CardContent className="flex flex-col items-center justify-center p-8">
+                        <LoadingSpinner className="size-8 mb-4" />
+                        <p className="text-muted-foreground">Loading your dashboard...</p>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
-            <div className="bg-white shadow-xl rounded-xl p-10 w-full max-w-2xl flex flex-col items-center">
-                <h1 className="text-3xl font-bold text-indigo-700 mb-2">Doctor Dashboard</h1>
-                {profileLoading ? (
-                    <div className="w-full bg-indigo-50 rounded-lg p-4 mb-6 flex flex-col gap-2">
-                        <h2 className="text-xl font-semibold text-indigo-900 mb-1">Loading...</h2>
-                    </div>
-                ) : (
-                    profile && (
-                        <div className="w-full bg-indigo-50 rounded-lg p-4 mb-6 flex flex-col gap-2">
-                            <h2 className="text-xl font-semibold text-indigo-900 mb-1">Welcome, Dr. {profile.name}</h2>
-                            <div className="flex flex-col md:flex-row md:gap-8">
-                                <span className="text-gray-700">Email: <span className="text-gray-900">{profile.email}</span></span>
-                                <span className="text-gray-700">ID: <span className="text-gray-900">{profile.id}</span></span>
-                            </div>
-                        </div>
-                    )
-                )}
-                <div className="w-full mb-6">
-                    <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-3 items-center">
-                        <input
-                            type="text"
-                            placeholder="Patient ID"
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                            required
-                        />
-                        <button
-                            type="submit"
-                            className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition font-semibold shadow"
-                        >
-                            Search
-                        </button>
-                    </form>
-                </div>
-                {error && <p className="mb-4 text-red-600 bg-red-50 border border-red-200 rounded p-2 w-full text-center">{error}</p>}
-                {patientLoading ? (
-                    <div className="w-full flex justify-center items-center mb-6">
-                        <svg className="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
-                    </div>
-                ) : patient && !error && (
-                    <div className="w-full bg-blue-50 rounded-lg p-4 mb-6 transition">
-                        <div className="flex flex-col md:flex-row md:gap-8 mb-2">
-                            <span className="text-gray-700">Name: <span className="text-gray-900">{patient.name}</span></span>
-                            <span className="text-gray-700">Email: <span className="text-gray-900">{patient.email}</span></span>
-                            <span className="text-gray-700">ID: <span className="text-gray-900">{patient._id}</span></span>
-                        </div>
-                        <div className="flex gap-4 mt-2">
-                            <button
-                                onClick={handleOpenPatientModal}
-                                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition font-semibold shadow"
-                            >
-                                View Details
-                            </button>
-                            <button
-                                onClick={handleOpenPrescriptionModal}
-                                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition font-semibold shadow"
-                            >
-                                Add Prescription
-                            </button>
-                        </div>
-                    </div>
-                )}
-                {showPatientModal && patient && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-2xl shadow-2xl p-0 w-full max-w-lg flex flex-col items-center relative animate-fadeIn">
-                            <div className="w-full flex items-center justify-between px-8 py-4 rounded-t-2xl bg-gradient-to-r from-blue-500 to-indigo-500">
-                                <div className="flex items-center gap-2">
-                                    <span className="inline-flex items-center justify-center bg-white bg-opacity-80 rounded-full p-2 shadow text-blue-700">
-                                        <svg xmlns='http://www.w3.org/2000/svg' className='h-6 w-6' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 11c0-1.104-.896-2-2-2s-2 .896-2 2 .896 2 2 2 2-.896 2-2zm0 0c0-1.104.896-2 2-2s2 .896 2 2-.896 2-2 2-2-.896-2-2zm0 8c-4 0-8-2-8-6V7a2 2 0 012-2h16a2 2 0 012 2v6c0 4-4 6-8 6z' /></svg>
-                                    </span>
-                                    <h2 className="text-lg font-bold text-white tracking-wide">Patient Details</h2>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+            <div className="max-w-6xl mx-auto space-y-6">
+                <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                    <CardHeader className="pb-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                <div className="p-3 bg-white/20 rounded-full">
+                                    <Stethoscope className="h-6 w-6" />
                                 </div>
-                                <button
-                                    className="rounded-full p-1 text-white hover:bg-white hover:text-indigo-700 transition focus:outline-none focus:ring-2 focus:ring-indigo-400 text-2xl font-bold"
-                                    onClick={() => setShowPatientModal(false)}
-                                    aria-label="Close"
+                                <div>
+                                    <CardTitle className="text-2xl font-bold">
+                                        Welcome back, Dr. {profile?.name || 'Doctor'}
+                                    </CardTitle>
+                                    <CardDescription className="text-blue-100 mt-1">
+                                        Manage your patients and prescriptions
+                                    </CardDescription>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-2 text-sm">
+                                <Calendar className="h-4 w-4" />
+                                <span>{new Date().toLocaleDateString()}</span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                        localStorage.removeItem("token");
+                                        navigate("/login");
+                                    }}
+                                    className="bg-white/10 border-white/20 hover:bg-white/20 text-white"
                                 >
-                                    &times;
-                                </button>
+                                    <LogOut className="h-4 w-4 mr-2" />
+                                    Logout
+                                </Button>
                             </div>
-                            <div className="w-full px-8 py-6 flex flex-col md:flex-row gap-8">
-                                <div className="flex-1 flex flex-col gap-4">
-                                    <div className="flex flex-col gap-1">
-                                        <div><span className="font-medium text-gray-700">Name:</span> {patient.name || 'N/A'}</div>
-                                        <div><span className="font-medium text-gray-700">Email:</span> {patient.email || 'N/A'}</div>
-                                        <div><span className="font-medium text-gray-700">ID:</span> {patient._id || 'N/A'}</div>
-                                    </div>
-                                    <hr className="my-2 border-gray-200" />
-                                    <div className="w-full">
-                                        <h3 className="font-semibold text-indigo-700 mb-2 flex items-center gap-2">
-                                            Files
-                                        </h3>
-                                        <ul className="divide-y divide-gray-200 rounded-lg overflow-hidden">
-                                            {patient.files && patient.files.length > 0 ? (
-                                                patient.files.map((item, index) => (
-                                                    <li key={index} className="py-2 px-3 flex justify-between items-center cursor-pointer hover:bg-indigo-50 transition">
-                                                        <span className="text-gray-800 truncate max-w-xs">{item.filename}</span>
-                                                        <a
-                                                            href={item.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-indigo-600 text-sm font-semibold px-3 py-1 rounded hover:bg-indigo-100 transition"
-                                                        >
-                                                            View
-                                                        </a>
-                                                    </li>
-                                                ))
-                                            ) : (
-                                                <li className="py-2 text-gray-400 px-3">No files found.</li>
-                                            )}
-                                        </ul>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                <Card className="shadow-lg">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Search className="h-5 w-5" />
+                            Patient Search
+                        </CardTitle>
+                        <CardDescription>
+                            Enter a patient ID to view their details and manage prescriptions
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <form onSubmit={handleSubmit} className="flex gap-3">
+                            <div className="flex-1 relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="text"
+                                    placeholder="Enter Patient ID"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-10"
+                                    required
+                                />
+                            </div>
+                            <Button type="submit" disabled={patientLoading}>
+                                {patientLoading ? <LoadingSpinner className="size-4 mr-2" /> : null}
+                                Search
+                            </Button>
+                        </form>
+
+                        {error && (
+                            <Alert variant="destructive">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {patient && !error && (
+                    <Card className="shadow-lg">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <User className="h-5 w-5" />
+                                Patient Found
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex items-center space-x-4 mb-6">
+                                <Avatar className="h-16 w-16">
+                                    <AvatarFallback className="text-lg font-semibold bg-blue-100 text-blue-600">
+                                        {patient.name[0].toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex flex-wrap gap-4 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <User className="h-4 w-4 text-muted-foreground" />
+                                            <span className="font-medium">{patient.name}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Mail className="h-4 w-4 text-muted-foreground" />
+                                            <span>{patient.email}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <IdCard className="h-4 w-4 text-muted-foreground" />
+                                            <Badge variant="secondary">{patient._id}</Badge>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+
+                            <div className="flex gap-3">
+                                <Dialog open={showPatientModal} onOpenChange={setShowPatientModal}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" className="flex items-center gap-2">
+                                            <Eye className="h-4 w-4" />
+                                            View Details
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-2xl max-h-[80vh]">
+                                        <DialogHeader>
+                                            <DialogTitle className="flex items-center gap-2">
+                                                <User className="h-5 w-5" />
+                                                Patient Details
+                                            </DialogTitle>
+                                        </DialogHeader>
+                                        <ScrollArea className="max-h-[60vh]">
+                                            <div className="space-y-6">
+                                                <div className="flex items-center space-x-4">
+                                                    <Avatar className="h-20 w-20">
+                                                        <AvatarFallback className="text-xl font-semibold bg-blue-100 text-blue-600">
+                                                            {patient.name[0].toUpperCase()}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="space-y-2">
+                                                        <h3 className="text-xl font-semibold">{patient.name}</h3>
+                                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                            <Mail className="h-4 w-4" />
+                                                            {patient.email}
+                                                        </div>
+                                                        <Badge variant="secondary">{patient._id}</Badge>
+                                                    </div>
+                                                </div>
+
+                                                <Separator />
+
+                                                <div>
+                                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                                                        <FileText className="h-4 w-4" />
+                                                        Medical Files
+                                                    </h4>
+                                                    {patient.files && patient.files.length > 0 ? (
+                                                        <div className="space-y-2">
+                                                            {patient.files.map((file, index) => (
+                                                                <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/50">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <FileText className="h-4 w-4 text-muted-foreground" />
+                                                                        <span className="text-sm font-medium truncate max-w-xs">
+                                                                            {file.filename}
+                                                                        </span>
+                                                                    </div>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        asChild
+                                                                    >
+                                                                        <a
+                                                                            href={file.url}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="flex items-center gap-1"
+                                                                        >
+                                                                            <Eye className="h-3 w-3" />
+                                                                            View
+                                                                        </a>
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-muted-foreground text-sm">No files available</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </ScrollArea>
+                                    </DialogContent>
+                                </Dialog>
+
+                                <Dialog open={showPrescriptionModal} onOpenChange={setShowPrescriptionModal}>
+                                    <DialogTrigger asChild>
+                                        <Button className="flex items-center gap-2">
+                                            <Plus className="h-4 w-4" />
+                                            Add Prescription
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-3xl max-h-[80vh]">
+                                        <ScrollArea className="max-h-[70vh]">
+                                            <PrescriptionForm
+                                                onSuccess={() => setShowPrescriptionModal(false)}
+                                                onClose={() => setShowPrescriptionModal(false)}
+                                                receptionistId={profile?.receptionistId}
+                                                doctorDetails={{
+                                                    name: profile?.name,
+                                                    email: profile?.email,
+                                                    id: profile?.id,
+                                                    receptionist: profile?.receptionist,
+                                                }}
+                                                patientDetails={{
+                                                    name: patient.name,
+                                                    email: patient.email,
+                                                    id: patient._id,
+                                                }}
+                                                setPrescription={setPrescription}
+                                            />
+                                        </ScrollArea>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
-                {showPrescriptionModal && patient && (
-                    <PrescriptionForm
-                        onSuccess={() => setShowPrescriptionModal(false)}
-                        onClose={() => setShowPrescriptionModal(false)}
-                        receptionistId={profile.receptionistId}
-                        doctorDetails={{
-                            name: profile.name,
-                            email: profile.email,
-                            id: profile.id,
-                            receptionist: profile.receptionist,
-                        }}
-                        patientDetails={{
-                            name: patient.name,
-                            email: patient.email,
-                            id: patient._id,
-                        }}
-                        setPrescription={setPrescription}
-                    />
-                )}
-                <button
-                    onClick={() => {
-                        localStorage.removeItem('token');
-                        navigate('/login');
-                    }}
-                    className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition font-semibold shadow mt-2"
-                >
-                    Logout
-                </button>
             </div>
         </div>
     );
