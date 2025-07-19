@@ -22,9 +22,9 @@ import {
     LogOut,
     MessageSquare,
     Calendar,
-    Phone
+    Phone,
+    Loader2
 } from "lucide-react";
-import LoadingSpinner from "../components/LoadingSpinner";
 import { io } from "socket.io-client";
 
 const ReceptionistDashboard = () => {
@@ -136,10 +136,10 @@ const ReceptionistDashboard = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+            <div className="min-h-screen flex items-center justify-center bg-muted">
                 <Card className="w-full max-w-md">
                     <CardContent className="flex flex-col items-center justify-center p-8">
-                        <LoadingSpinner className="size-8 mb-4" />
+                        <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
                         <p className="text-muted-foreground">Loading your dashboard...</p>
                     </CardContent>
                 </Card>
@@ -148,7 +148,7 @@ const ReceptionistDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="min-h-screen bg-muted p-4">
             <div className="max-w-6xl mx-auto space-y-6">
                 <Card className="border-0 shadow-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white">
                     <CardHeader className="pb-6">
@@ -171,6 +171,14 @@ const ReceptionistDashboard = () => {
                                     <Calendar className="h-4 w-4" />
                                     <span>{new Date().toLocaleDateString()}</span>
                                 </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="bg-white/10 border-white/20 hover:bg-white/20 text-white"
+                                    onClick={() => navigate('/profile')}>
+                                    <User className="h-4 w-4 mr-2" />
+                                    Profile
+                                </Button>
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -231,7 +239,7 @@ const ReceptionistDashboard = () => {
                                             <CardContent className="p-6">
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center space-x-4">
-                                                        <Avatar className="h-12 w-12">
+                                                        <Avatar className="h-12 w-12 ">
                                                             <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
                                                                 {req.patientDetails.name[0].toUpperCase()}
                                                             </AvatarFallback>

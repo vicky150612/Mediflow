@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from "@/components/ui/input-otp";
 import "../index.css";
 import emailjs from '@emailjs/browser';
 
@@ -46,11 +54,14 @@ const Signup = () => {
         setError('');
         setSuccess('');
         setSending(true);
+
         const formDataObj = new FormData(e.target);
         const data = Object.fromEntries(formDataObj.entries());
         data.role = role;
         if (role !== 'doctor') delete data.registrationNumber;
+
         const code = Math.floor(Math.random() * 900000) + 100000;
+
         try {
             await sendEmail(data.email, code);
             setVerificationCode(code);
@@ -68,16 +79,19 @@ const Signup = () => {
         e.preventDefault();
         setError('');
         setSuccess('');
+
         if (inputCode !== verificationCode?.toString()) {
             setError('Invalid verification code');
             return;
         }
+
         try {
             const res = await fetch(`${backendUrl}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
+
             if (res.ok) {
                 setSuccess('Signup successful! Please login.');
                 setTimeout(() => {
@@ -92,14 +106,32 @@ const Signup = () => {
         }
     };
 
+    const resendCode = async () => {
+        setError('');
+        setSuccess('');
+        setSending(true);
+
+        try {
+            await sendEmail(formData.email, verificationCode);
+            setSuccess('Verification code resent.');
+        } catch {
+            setError('Failed to resend code.');
+        } finally {
+            setSending(false);
+        }
+    };
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
-            <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md flex flex-col items-center">
-                <h2 className="text-2xl font-bold mb-2 text-indigo-700">Create an Account</h2>
-                <p className="mb-6 text-gray-500 text-sm">Sign up to get started with Mediflow</p>
+        <div className="min-h-screen flex items-center justify-center bg-muted">
+            <Card className="w-full max-w-md p-8 flex flex-col gap-6 shadow-lg">
+                <CardHeader className="text-center">
+                    <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
+                    <CardDescription>Sign up to get started with Mediflow</CardDescription>
+                </CardHeader>
+
                 {step === 1 && (
-                    <form onSubmit={handleSignupSubmit} className="w-full flex flex-col gap-4">
-                                                <div className="flex gap-6 mb-2 flex-wrap">
+                    <form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
+                        <div className="flex gap-4 mb-2 flex-wrap justify-center">
                             <label className="flex items-center cursor-pointer">
                                 <input
                                     type="radio"
@@ -134,78 +166,126 @@ const Signup = () => {
                                 <span className="text-gray-700">Receptionist</span>
                             </label>
                         </div>
-                        <div>
-                            <label htmlFor="name" className="block text-gray-700 mb-1 font-medium">Name</label>
-                            <input
+
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="name" className="font-medium">Name</label>
+                            <Input
                                 type="text"
                                 name="name"
                                 id="name"
                                 required
-                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                                placeholder="Your Name"
                                 autoComplete="name"
                             />
                         </div>
-                        <div>
-                            <label htmlFor="email" className="block text-gray-700 mb-1 font-medium">Email</label>
-                            <input
+
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="email" className="font-medium">Email</label>
+                            <Input
                                 type="email"
                                 name="email"
                                 id="email"
                                 required
-                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                                placeholder="you@example.com"
                                 autoComplete="email"
                             />
                         </div>
+
                         {role === 'doctor' && (
-                            <div>
-                                <label htmlFor="registrationNumber" className="block text-gray-700 mb-1 font-medium">Registration Number</label>
-                                <input
+                            <div className="flex flex-col gap-1">
+                                <label htmlFor="registrationNumber" className="font-medium">Registration Number</label>
+                                <Input
                                     type="text"
                                     name="registrationNumber"
                                     id="registrationNumber"
                                     required={role === 'doctor'}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                                    placeholder="Doctor Reg. No."
                                 />
                             </div>
                         )}
-                        <div>
-                            <label htmlFor="password" className="block text-gray-700 mb-1 font-medium">Password</label>
-                            <input
+
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="password" className="font-medium">Password</label>
+                            <Input
                                 type="password"
                                 name="password"
                                 id="password"
                                 required
-                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                                placeholder="••••••••"
                                 autoComplete="new-password"
                             />
                         </div>
-                        <button type="submit" className="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition" disabled={sending}>{sending ? 'Sending code...' : 'Signup'}</button>
-                        {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
-                        {success && <p className="text-green-600 text-sm mt-2">{success}</p>}
+
+                        <Button type="submit" className="w-full" disabled={sending}>
+                            {sending ? 'Sending code...' : 'Signup'}
+                        </Button>
                     </form>
                 )}
+
                 {step === 2 && (
-                    <form onSubmit={handleCodeSubmit} className="w-full flex flex-col gap-4">
-                        <div>
-                            <label htmlFor="verificationCode" className="block text-gray-700 mb-1 font-medium">Enter Verification Code</label>
-                            <input
-                                type="text"
-                                name="verificationCode"
-                                id="verificationCode"
-                                value={inputCode}
-                                onChange={e => setInputCode(e.target.value)}
-                                required
-                                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                                placeholder="Enter the 6-digit code sent to your email"
-                            />
-                        </div>
-                        <button type="submit" className="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition">Verify & Register</button>
-                        <button type="button" className="text-indigo-600 underline text-sm mt-1" onClick={async () => { setError(''); setSuccess(''); setSending(true); try { await sendEmail(formData.email, verificationCode); setSuccess('Verification code resent.'); } catch { setError('Failed to resend code.'); } setSending(false); }}>Resend Code</button>
-                        {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
-                        {success && <p className="text-green-600 text-sm mt-2">{success}</p>}
-                    </form>
+                    <CardContent className="p-0">
+                        <form onSubmit={handleCodeSubmit} className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-3 items-center">
+                                <label htmlFor="verificationCode" className="font-medium text-center">
+                                    Enter Verification Code
+                                </label>
+                                <p className="text-sm text-muted-foreground text-center">
+                                    We've sent a 6-digit code to {formData.email}
+                                </p>
+
+                                <InputOTP
+                                    maxLength={6}
+                                    value={inputCode}
+                                    onChange={(value) => setInputCode(value)}
+                                    className="justify-center"
+                                >
+                                    <InputOTPGroup>
+                                        <InputOTPSlot index={0} />
+                                        <InputOTPSlot index={1} />
+                                        <InputOTPSlot index={2} />
+                                        <InputOTPSlot index={3} />
+                                        <InputOTPSlot index={4} />
+                                        <InputOTPSlot index={5} />
+                                    </InputOTPGroup>
+                                </InputOTP>
+                            </div>
+
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={inputCode.length !== 6}
+                            >
+                                Verify & Register
+                            </Button>
+
+                            <Button
+                                type="button"
+                                variant="link"
+                                className="text-indigo-600 underline text-sm mt-1 px-0"
+                                onClick={resendCode}
+                                disabled={sending}
+                            >
+                                {sending ? 'Sending...' : 'Resend Code'}
+                            </Button>
+                        </form>
+                    </CardContent>
                 )}
-            </div>
+
+                {(error || success) && (
+                    <CardFooter className="p-0">
+                        {error && (
+                            <p className="w-full text-center text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded p-2">
+                                {error}
+                            </p>
+                        )}
+                        {success && (
+                            <p className="w-full text-center text-sm text-green-700 bg-green-100 border border-green-200 rounded p-2">
+                                {success}
+                            </p>
+                        )}
+                    </CardFooter>
+                )}
+            </Card>
         </div>
     );
 };

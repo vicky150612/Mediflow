@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
+import { io } from "socket.io-client";
 import {
     Search,
     User,
@@ -21,9 +23,8 @@ import {
     Stethoscope,
     Calendar,
     LogOut,
+    Loader2
 } from "lucide-react";
-import LoadingSpinner from "../components/LoadingSpinner";
-import PrescriptionForm from '../components/PrescriptionForm';
 import "../index.css";
 
 const DoctorDashboard = () => {
@@ -34,9 +35,16 @@ const DoctorDashboard = () => {
     const [showPatientModal, setShowPatientModal] = useState(false);
     const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
     const [error, setError] = useState('');
-    const [prescription, setPrescription] = useState('');
     const [profileLoading, setProfileLoading] = useState(true);
     const [patientLoading, setPatientLoading] = useState(false);
+
+    // Prescription form state
+    const [prescription, setPrescription] = useState("");
+    const [prescriptionLoading, setPrescriptionLoading] = useState(false);
+    const [prescriptionError, setPrescriptionError] = useState("");
+    const [prescriptionSuccess, setPrescriptionSuccess] = useState("");
+    const socketRef = useRef(null);
+    const backendUrl = import.meta.env.VITE_Backend_URL;
 
     useEffect(() => {
         setProfileLoading(true);
@@ -45,7 +53,7 @@ const DoctorDashboard = () => {
             navigate('/login');
             return;
         }
-        fetch(`${import.meta.env.VITE_Backend_URL}/me`, {
+        fetch(`${backendUrl}/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => {
@@ -59,17 +67,34 @@ const DoctorDashboard = () => {
                 navigate('/login');
             })
             .finally(() => setProfileLoading(false));
-    }, [navigate]);
+    }, [navigate, backendUrl]);
 
-    const handleSubmit = async (e) => {
+    useEffect(() => {
+        // Initialize socket connection
+        socketRef.current = io(backendUrl, {
+            transports: ["websocket"],
+            auth: {
+                token: localStorage.getItem("token"),
+            },
+            withCredentials: true,
+        });
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+        };
+    }, [backendUrl]);
+
+    const handlePatientSearch = async (e) => {
         e.preventDefault();
         setError('');
         setPatient(null);
         setShowPatientModal(false);
-        setShowPrescriptionModal(false);
         setPatientLoading(true);
+
         try {
-            const res = await fetch(`${import.meta.env.VITE_Backend_URL}/patient/details/?patientId=${search}`, {
+            const res = await fetch(`${backendUrl}/patient/details/?patientId=${search}`, {
                 method: 'GET',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             });
@@ -77,8 +102,6 @@ const DoctorDashboard = () => {
             if (!res.ok) {
                 setError(data.message || 'Failed to fetch patient details');
                 setPatient(null);
-                setShowPatientModal(false);
-                setShowPrescriptionModal(false);
                 setPatientLoading(false);
                 return;
             }
@@ -87,20 +110,68 @@ const DoctorDashboard = () => {
         } catch (error) {
             setError(error.message || 'Network error');
             setPatient(null);
-            setShowPatientModal(false);
-            setShowPrescriptionModal(false);
         } finally {
             setPatientLoading(false);
         }
     };
 
+    const handlePrescriptionSubmit = async (e) => {
+        e.preventDefault();
+        setPrescriptionError("");
+        setPrescriptionSuccess("");
+        setPrescriptionLoading(true);
+
+        if (socketRef.current) {
+            socketRef.current.emit("send_to_reception", {
+                receptionistId: profile.receptionist,
+                patientDetails: {
+                    name: patient.name,
+                    email: patient.email,
+                    id: patient._id,
+                },
+                doctorDetails: {
+                    name: profile.name,
+                    email: profile.email,
+                    id: profile.id,
+                    receptionist: profile.receptionist,
+                },
+                prescription,
+            }, (response) => {
+                if (response.success) {
+                    setPrescriptionSuccess("Prescription sent to reception successfully!");
+                    setTimeout(() => {
+                        setPrescriptionLoading(false);
+                        setShowPrescriptionModal(false);
+                        setPrescription("");
+                        setPrescriptionSuccess("");
+                        setPatient(null);
+                        setSearch("");
+                        setError("");
+                    }, 1000);
+                } else {
+                    setPrescriptionError("Failed to deliver to receptionist. Please try again.");
+                    setPrescriptionLoading(false);
+                }
+            });
+        } else {
+            setPrescriptionError("Socket not connected. Please try again.");
+            setPrescriptionLoading(false);
+        }
+    };
+
+    const handlePrescriptionModalClose = () => {
+        setShowPrescriptionModal(false);
+        setPrescription("");
+        setPrescriptionError("");
+        setPrescriptionSuccess("");
+    };
 
     if (profileLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+            <div className="min-h-screen flex items-center justify-center bg-muted">
                 <Card className="w-full max-w-md">
                     <CardContent className="flex flex-col items-center justify-center p-8">
-                        <LoadingSpinner className="size-8 mb-4" />
+                        <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
                         <p className="text-muted-foreground">Loading your dashboard...</p>
                     </CardContent>
                 </Card>
@@ -109,7 +180,7 @@ const DoctorDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+        <div className="min-h-screen bg-muted p-4">
             <div className="max-w-6xl mx-auto space-y-6">
                 <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
                     <CardHeader className="pb-6">
@@ -130,6 +201,14 @@ const DoctorDashboard = () => {
                             <div className="flex items-center space-x-2 text-sm">
                                 <Calendar className="h-4 w-4" />
                                 <span>{new Date().toLocaleDateString()}</span>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="bg-white/10 border-white/20 hover:bg-white/20 text-white"
+                                    onClick={() => navigate('/profile')}>
+                                    <User className="h-4 w-4 mr-2" />
+                                    Profile
+                                </Button>
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -158,7 +237,7 @@ const DoctorDashboard = () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <form onSubmit={handleSubmit} className="flex gap-3">
+                        <form onSubmit={handlePatientSearch} className="flex gap-3">
                             <div className="flex-1 relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -171,7 +250,7 @@ const DoctorDashboard = () => {
                                 />
                             </div>
                             <Button type="submit" disabled={patientLoading}>
-                                {patientLoading ? <LoadingSpinner className="size-4 mr-2" /> : null}
+                                {patientLoading ? <Loader2 className="size-4 mr-2" /> : null}
                                 Search
                             </Button>
                         </form>
@@ -221,7 +300,7 @@ const DoctorDashboard = () => {
                             <div className="flex gap-3">
                                 <Dialog open={showPatientModal} onOpenChange={setShowPatientModal}>
                                     <DialogTrigger asChild>
-                                        <Button variant="outline" className="flex items-center gap-2">
+                                        <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowPatientModal(true)} >
                                             <Eye className="h-4 w-4" />
                                             View Details
                                         </Button>
@@ -229,68 +308,42 @@ const DoctorDashboard = () => {
                                     <DialogContent className="max-w-2xl max-h-[80vh]">
                                         <DialogHeader>
                                             <DialogTitle className="flex items-center gap-2">
-                                                <User className="h-5 w-5" />
-                                                Patient Details
+                                                <FileText className="h-4 w-4" />
+                                                Medical Files
                                             </DialogTitle>
                                         </DialogHeader>
                                         <ScrollArea className="max-h-[60vh]">
-                                            <div className="space-y-6">
-                                                <div className="flex items-center space-x-4">
-                                                    <Avatar className="h-20 w-20">
-                                                        <AvatarFallback className="text-xl font-semibold bg-blue-100 text-blue-600">
-                                                            {patient.name[0].toUpperCase()}
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="space-y-2">
-                                                        <h3 className="text-xl font-semibold">{patient.name}</h3>
-                                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                            <Mail className="h-4 w-4" />
-                                                            {patient.email}
+                                            {patient.files && patient.files.length > 0 ? (
+                                                <div className="space-y-2">
+                                                    {patient.files.map((file, index) => (
+                                                        <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/50">
+                                                            <div className="flex items-center gap-3">
+                                                                <FileText className="h-4 w-4 text-muted-foreground" />
+                                                                <span className="text-sm font-medium truncate max-w-xs">
+                                                                    {file.filename}
+                                                                </span>
+                                                            </div>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                asChild
+                                                            >
+                                                                <a
+                                                                    href={file.url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="flex items-center gap-1"
+                                                                >
+                                                                    <Eye className="h-3 w-3" />
+                                                                    View
+                                                                </a>
+                                                            </Button>
                                                         </div>
-                                                        <Badge variant="secondary">{patient._id}</Badge>
-                                                    </div>
+                                                    ))}
                                                 </div>
-
-                                                <Separator />
-
-                                                <div>
-                                                    <h4 className="font-semibold mb-3 flex items-center gap-2">
-                                                        <FileText className="h-4 w-4" />
-                                                        Medical Files
-                                                    </h4>
-                                                    {patient.files && patient.files.length > 0 ? (
-                                                        <div className="space-y-2">
-                                                            {patient.files.map((file, index) => (
-                                                                <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/50">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <FileText className="h-4 w-4 text-muted-foreground" />
-                                                                        <span className="text-sm font-medium truncate max-w-xs">
-                                                                            {file.filename}
-                                                                        </span>
-                                                                    </div>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        asChild
-                                                                    >
-                                                                        <a
-                                                                            href={file.url}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="flex items-center gap-1"
-                                                                        >
-                                                                            <Eye className="h-3 w-3" />
-                                                                            View
-                                                                        </a>
-                                                                    </Button>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <p className="text-muted-foreground text-sm">No files available</p>
-                                                    )}
-                                                </div>
-                                            </div>
+                                            ) : (
+                                                <p className="text-muted-foreground text-sm">No files available</p>
+                                            )}
                                         </ScrollArea>
                                     </DialogContent>
                                 </Dialog>
@@ -302,34 +355,58 @@ const DoctorDashboard = () => {
                                             Add Prescription
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="max-w-3xl max-h-[80vh]">
-                                        <ScrollArea className="max-h-[70vh]">
-                                            <PrescriptionForm
-                                                onSuccess={() => setShowPrescriptionModal(false)}
-                                                onClose={() => setShowPrescriptionModal(false)}
-                                                receptionistId={profile?.receptionistId}
-                                                doctorDetails={{
-                                                    name: profile?.name,
-                                                    email: profile?.email,
-                                                    id: profile?.id,
-                                                    receptionist: profile?.receptionist,
-                                                }}
-                                                patientDetails={{
-                                                    name: patient.name,
-                                                    email: patient.email,
-                                                    id: patient._id,
-                                                }}
-                                                setPrescription={setPrescription}
-                                            />
-                                        </ScrollArea>
+                                    <DialogContent className="max-w-lg">
+                                        <DialogHeader>
+                                            <DialogTitle>Add Prescription</DialogTitle>
+                                        </DialogHeader>
+                                        <form onSubmit={handlePrescriptionSubmit} className="space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-medium">Prescription</label>
+                                                <Textarea
+                                                    value={prescription}
+                                                    onChange={(e) => setPrescription(e.target.value)}
+                                                    className="min-h-[120px]"
+                                                    rows={4}
+                                                    placeholder="Enter prescription details..."
+                                                />
+                                            </div>
+
+                                            {prescriptionError && (
+                                                <Alert variant="destructive">
+                                                    <AlertCircle className="h-4 w-4" />
+                                                    <AlertDescription>{prescriptionError}</AlertDescription>
+                                                </Alert>
+                                            )}
+
+                                            {prescriptionSuccess && (
+                                                <Alert variant="default">
+                                                    <AlertDescription>{prescriptionSuccess}</AlertDescription>
+                                                </Alert>
+                                            )}
+
+                                            <div className="flex justify-end space-x-3">
+                                                <Button
+                                                    variant="outline"
+                                                    type="button"
+                                                    onClick={handlePrescriptionModalClose}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                                <Button type="submit" disabled={prescriptionLoading}>
+                                                    {prescriptionLoading && <Loader2 className="size-4 mr-2" />}
+                                                    Send to Reception
+                                                </Button>
+                                            </div>
+                                        </form>
                                     </DialogContent>
                                 </Dialog>
                             </div>
                         </CardContent>
                     </Card>
-                )}
-            </div>
-        </div>
+                )
+                }
+            </div >
+        </div >
     );
 }
 

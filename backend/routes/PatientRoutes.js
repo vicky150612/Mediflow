@@ -115,6 +115,13 @@ router.post("/doc", authMiddleware, async (req, res) => {
                 message: 'Doctor not found'
             });
         }
+        const access = await db.collection('accessList').findOne({ user: userId, doctor: doctorId });
+        if (access) {
+            return res.status(200).json({
+                success: false,
+                message: 'Doctor already in access list'
+            });
+        }
         await db.collection('accessList').insertOne({ user: userId, doctor: doctorId });
         res.status(200).json({
             success: true,

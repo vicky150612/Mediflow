@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import DoctorDashboard from './DoctorDashboard';
 import PatientDashboard from './PatientDashboard';
 import ReceptionistDashboard from './ReceptionistDashboard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { Loader2 } from 'lucide-react';
+
 
 
 const Dashboard = () => {
@@ -37,8 +38,8 @@ const Dashboard = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-indigo-200">
-                <LoadingSpinner />
+            <div className="flex items-center justify-center h-screen bg-muted">
+                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
             </div>
         );
     };

@@ -1,18 +1,42 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+    Users,
+    UserPlus,
+    Trash2,
+    Eye,
+    ArrowLeft,
+    AlertCircle,
+    Loader2
+} from "lucide-react";
 import "../index.css";
-import LoadingSpinner from '../components/LoadingSpinner';
+
 
 const PatientAccesslist = () => {
     const backendUrl = import.meta.env.VITE_Backend_URL;
-    const [doctor, setDoctor] = useState(""); // for adding doctor
-    const [doctorDetails, setDoctorDetails] = useState(null); // for viewing doctor details
+    const navigate = useNavigate();
+
+    const [doctor, setDoctor] = useState("");
+    const [doctorDetails, setDoctorDetails] = useState(null);
     const [showDoctorModal, setShowDoctorModal] = useState(false);
     const [error, setError] = useState("");
     const [list, setList] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [addingDoctor, setAddingDoctor] = useState(false);
+    const [removingId, setRemovingId] = useState(null);
 
     // Fetch the access list from the backend
     useEffect(() => {
+        fetchAccessList();
+    }, [backendUrl]);
+
+    const fetchAccessList = () => {
         setLoading(true);
         fetch(`${backendUrl}/patient/accesslist`, {
             headers: {
@@ -21,7 +45,7 @@ const PatientAccesslist = () => {
         })
             .then(response => {
                 if (!response.ok) {
-                    setError('Failed to fetch access list');
+                    throw new Error('Failed to fetch access list');
                 }
                 return response.json();
             })
@@ -38,11 +62,15 @@ const PatientAccesslist = () => {
                 setList([]);
             })
             .finally(() => setLoading(false));
-    }, [backendUrl]);
+    };
 
     function handleAddDoctor(e) {
         e.preventDefault();
+        if (!doctor.trim()) return;
+
+        setAddingDoctor(true);
         setError('');
+
         fetch(`${backendUrl}/patient/doc`, {
             method: 'POST',
             headers: {
@@ -53,30 +81,27 @@ const PatientAccesslist = () => {
         })
             .then(response => {
                 if (!response.ok) {
-                    setError(response.message || 'Failed to add doctor');
+                    throw new Error(response.message || 'Failed to add doctor');
                 }
                 return response.json();
             })
             .then(data => {
                 if (!data.success) {
-                    setError(data.message || 'Failed to add doctor1');
+                    throw new Error(data.message || 'Failed to add doctor');
                 }
                 setDoctor('');
-                // Re-fetch access list
-                fetch(`${backendUrl}/patient/accesslist`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => setList(data.data || []));
+                fetchAccessList();
             })
             .catch(error => {
                 setError(error.message);
-            });
+            })
+            .finally(() => setAddingDoctor(false));
     }
 
     function handleRemoveDoctor(Id) {
+        setRemovingId(Id);
+        setError('');
+
         fetch(`${backendUrl}/patient/doc/${Id}`, {
             method: 'DELETE',
             headers: {
@@ -85,118 +110,187 @@ const PatientAccesslist = () => {
         })
             .then(response => {
                 if (!response.ok) {
-                    setError(response.message || 'Failed to remove doctor');
+                    throw new Error(response.message || 'Failed to remove doctor');
                 }
                 return response.json();
             })
             .then(data => {
                 if (!data.success) {
-                    setError(data.message || 'Failed to remove doctor');
+                    throw new Error(data.message || 'Failed to remove doctor');
                 }
-                // Re-fetch access list
-                fetch(`${backendUrl}/patient/accesslist`, {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => setList(data.data || []));
+                fetchAccessList();
             })
             .catch(error => {
                 setError(error.message);
-            });
+            })
+            .finally(() => setRemovingId(null));
     }
 
     function handleDoctorModal(id) {
         fetch(`${backendUrl}/doctor/detailes/${id}`)
-            .then(response => {
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 setDoctorDetails(data.data || null);
                 setShowDoctorModal(true);
             })
+            .catch(() => {
+                setDoctorDetails(null);
+                setShowDoctorModal(true);
+            });
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
-            <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-2xl flex flex-col items-center">
-                <h1 className="text-3xl font-bold text-indigo-700 mb-2">Doctor Access List</h1>
-                <p className="mb-6 text-gray-500 text-sm">Manage which doctors have access to your records</p>
-                <form onSubmit={handleAddDoctor} className="w-full flex flex-col md:flex-row gap-4 mb-6 items-center justify-center">
-                    <input
-                        type="text"
-                        value={doctor}
-                        onChange={(e) => setDoctor(e.target.value)}
-                        placeholder="Enter Doctor ID"
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-                        required
-                    />
-                    <button
-                        type="submit"
-                        className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition font-semibold shadow"
+        <div className="min-h-screen bg-slate-50 p-4">
+            <div className="max-w-2xl mx-auto space-y-4">
+                <div className="flex items-center gap-3">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(-1)}
+                        className="p-2"
                     >
-                        Add Doctor
-                    </button>
-                </form>
-                {error && <p className="mb-4 text-red-600 bg-red-50 border border-red-200 rounded p-2 w-full text-center">{error}</p>}
-                {loading ? (
-                    <LoadingSpinner />
-                ) : (
-                    <ul className="w-full divide-y divide-gray-200">
-                        {list.length === 0 && <li className="py-4 text-gray-400 text-center">No doctors have access yet.</li>}
-                        {list.map(doc => (
-                            <li
-                                key={doc.doctor}
-                                className="flex flex-col md:flex-row md:justify-between md:items-center py-3 px-2 hover:bg-indigo-50 rounded gap-2 cursor-pointer"
-                                onClick={e => {
-                                    // Prevent modal open if Remove button is clicked
-                                    if (e.target.tagName !== 'BUTTON') handleDoctorModal(doc.doctor);
-                                }}
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <div>
+                        <h1 className="text-xl font-bold text-slate-900">Access Control</h1>
+                        <p className="text-sm text-slate-600">Manage doctor permissions</p>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardContent className="pt-4">
+                        <form onSubmit={handleAddDoctor} className="flex gap-2">
+                            <Input
+                                value={doctor}
+                                onChange={(e) => setDoctor(e.target.value)}
+                                placeholder="Enter Doctor ID"
+                                className="flex-1"
+                                disabled={addingDoctor}
+                            />
+                            <Button
+                                type="submit"
+                                size="sm"
+                                disabled={addingDoctor || !doctor.trim()}
+                                className="px-4"
                             >
-                                <span className="font-medium text-gray-800">
-                                    {doc.doctor}
-                                </span>
-                                <button
-                                    onClick={e => {
-                                        e.stopPropagation();
-                                        handleRemoveDoctor(doc.doctor);
-                                    }}
-                                    className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 transition font-semibold shadow"
-                                >
-                                    Remove
-                                </button>
-                            </li>
-                        ))}
-                        {showDoctorModal && (
-                            <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-                                <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm flex flex-col items-center relative">
-                                    <button
-                                        className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-xl font-bold"
-                                        onClick={() => setShowDoctorModal(false)}
-                                        aria-label="Close"
+                                {addingDoctor ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <UserPlus className="h-4 w-4" />
+                                )}
+                            </Button>
+                        </form>
+                        {error && (
+                            <Alert variant="destructive" className="mt-3">
+                                <AlertCircle className="h-4 w-4" />
+                                <AlertDescription className="text-sm">{error}</AlertDescription>
+                            </Alert>
+                        )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                Authorized Doctors
+                            </CardTitle>
+                            <Badge variant="secondary" className="text-xs">
+                                {list.length}
+                            </Badge>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pt-2">
+                        {loading ? (
+                            <div className="flex justify-center py-6">
+                                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+                            </div>
+                        ) : list.length === 0 ? (
+                            <div className="text-center py-6 text-slate-500">
+                                <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                                <p className="text-sm">No doctors added yet</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-1">
+                                {list.map(doc => (
+                                    <div
+                                        key={doc.doctor}
+                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 group"
                                     >
-                                        &times;
-                                    </button>
-                                    <h2 className="text-lg font-bold mb-4 text-indigo-700">Doctor Details</h2>
-                                    {doctorDetails ? (
-                                        <div className="w-full flex flex-col gap-2">
-                                            <div><span className="font-medium text-gray-700">Name:</span> {doctorDetails.name || 'N/A'}</div>
-                                            <div><span className="font-medium text-gray-700">Email:</span> {doctorDetails.email || 'N/A'}</div>
-                                            <div><span className="font-medium text-gray-700">Registration Number:</span> {doctorDetails.registrationNumber || 'N/A'}</div>
-                                            <div><span className="font-medium text-gray-700">ID:</span> {doctorDetails._id || 'N/A'}</div>
+                                        <div
+                                            className="flex-1 cursor-pointer"
+                                            onClick={() => handleDoctorModal(doc.doctor)}
+                                        >
+                                            <p className="font-medium text-slate-900">{doc.doctor}</p>
+                                            <p className="text-xs text-slate-500">Click to view details</p>
                                         </div>
-                                    ) : (
-                                        <div className="text-gray-500">No details found.</div>
-                                    )}
-                                </div>
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleDoctorModal(doc.doctor)}
+                                                className="h-8 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <Eye className="h-3 w-3" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleRemoveDoctor(doc.doctor)}
+                                                disabled={removingId === doc.doctor}
+                                                className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            >
+                                                {removingId === doc.doctor ? (
+                                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                                ) : (
+                                                    <Trash2 className="h-3 w-3" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         )}
-                    </ul>
-                )}
+                    </CardContent>
+                </Card>
+
+                {/* Doctor Details Modal */}
+                <Dialog open={showDoctorModal} onOpenChange={setShowDoctorModal}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle className="text-base">Doctor Details</DialogTitle>
+                        </DialogHeader>
+                        {doctorDetails ? (
+                            <div className="space-y-3 text-sm">
+                                <div className="grid grid-cols-3 gap-2">
+                                    <span className="text-slate-600">Name:</span>
+                                    <span className="col-span-2 font-medium">{doctorDetails.name || 'N/A'}</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <span className="text-slate-600">Email:</span>
+                                    <span className="col-span-2 font-medium">{doctorDetails.email || 'N/A'}</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <span className="text-slate-600">Reg. No:</span>
+                                    <span className="col-span-2 font-medium">{doctorDetails.registrationNumber || 'N/A'}</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    <span className="text-slate-600">ID:</span>
+                                    <span className="col-span-2 font-mono text-xs">{doctorDetails._id || 'N/A'}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-4 text-slate-500 text-sm">
+                                <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <p>No details available</p>
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );
-}
+};
 
-export default PatientAccesslist
+export default PatientAccesslist;

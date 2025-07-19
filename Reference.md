@@ -7,12 +7,14 @@ UI changes include
 - Login Page
 - Doctor Dashboard
 - Receptionist Dashboard
+- Patient Dashboard, Files, Access List, Prescription
+- Profile Page
 
 ## 🧑‍⚕️ Patient Functionality
 
 ### ✅ Implemented
 - **Modern Dashboard** with:
-  - Profile info (styled with Tailwind, improved layout)
+  - Profile info ()
   - Navigation to Files & Access List
 - **PatientFiles.jsx**
   - View uploaded files (styled list, click filename to view)
@@ -34,6 +36,8 @@ UI changes include
 - AI agent
 - Security enhancements (confirmation dialogs, password reset)
 - Profile editing
+- Prescriptions contain Title, Description, Date, and Status (Active/Inactive)
+- Set prescriptions as inactive or delete them
 
 ---
 
@@ -58,6 +62,7 @@ UI changes include
 
 ### ❌ Missing / Left To Do
 - Edit doctor profile
+- Acsess to patient prescriptions
 
 ---
 

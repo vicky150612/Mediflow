@@ -1,7 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+    FileText,
+    Users,
+    Pill,
+    LogOut,
+    User,
+    Mail,
+    Hash,
+    Activity,
+    Loader2
+} from "lucide-react";
 import "../index.css";
-import LoadingSpinner from '../components/LoadingSpinner';
+
 
 const PatientDashboard = () => {
     const [profile, setProfile] = useState(null);
@@ -35,58 +50,121 @@ const PatientDashboard = () => {
 
     if (!profile)
         return (
-            <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-100 to-indigo-200">
-                <LoadingSpinner />
+            <div className="flex items-center justify-center min-h-screen bg-muted">
+                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
             </div>
         );
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
-            <div className="bg-white shadow-xl rounded-xl p-10 w-full max-w-lg flex flex-col items-center">
-                <h1 className="text-3xl font-bold text-indigo-700 mb-2">Patient Dashboard</h1>
-                <p className="mb-6 text-gray-500 text-sm">Welcome, <span className="font-semibold text-indigo-600">{profile.name}</span></p>
-                <div className="w-full bg-indigo-50 rounded-lg p-4 mb-8 flex flex-col gap-2">
-                    <div className="flex justify-between">
-                        <span className="font-medium text-gray-700">Name:</span>
-                        <span className="text-gray-900">{profile.name}</span>
+        <div className="min-h-screen bg-muted p-4">
+            <div className="max-w-4xl mx-auto space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900">Patient Dashboard</h1>
+                        <p className="text-slate-600 mt-1">Manage your health records and appointments</p>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="font-medium text-gray-700">Email:</span>
-                        <span className="text-gray-900">{profile.email}</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span className="font-medium text-gray-700">Patient ID:</span>
-                        <span className="text-gray-900">{profile.id}</span>
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" onClick={() => navigate('/profile')} className="gap-2">
+                            <User className="h-4 w-4" />
+                            Profile
+                        </Button>
+                        <Button variant="outline" onClick={handleLogout} className="gap-2">
+                            <LogOut className="h-4 w-4" />
+                            Logout
+                        </Button>
                     </div>
                 </div>
-                <div className="flex flex-col gap-3 w-full">
-                    <button
-                        onClick={() => navigate('/files')}
-                        className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition font-semibold shadow"
-                    >
-                        View Reports
-                    </button>
-                    <button
-                        onClick={() => navigate('/accesslist')}
-                        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition font-semibold shadow"
-                    >
-                        View Access List
-                    </button>
-                    <button
-                        onClick={() => navigate('/prescriptions')}
-                        className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition font-semibold shadow"
-                    >
-                        View Prescriptions
-                    </button>
-                    <button
-                        onClick={handleLogout}
-                        className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition font-semibold shadow mt-2"
-                    >
-                        Logout
-                    </button>
+
+                <Card>
+                    <CardHeader className="pb-4">
+                        <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16 cursor-pointer" onClick={() => navigate('/profile')}>
+                                <AvatarFallback className="bg-blue-500 text-white text-lg">
+                                    {profile.name[0].toUpperCase()}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <CardTitle className="text-xl">Welcome back, {profile.name.split(' ')[0]}!</CardTitle>
+                                <Badge variant="secondary" className="mt-1">
+                                    <Activity className="h-3 w-3 mr-1" />
+                                    Active Patient
+                                </Badge>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                                <User className="h-4 w-4 text-slate-500" />
+                                <div>
+                                    <p className="text-sm text-slate-600">Full Name</p>
+                                    <p className="font-medium">{profile.name}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                                <Mail className="h-4 w-4 text-slate-500" />
+                                <div>
+                                    <p className="text-sm text-slate-600">Email</p>
+                                    <p className="font-medium">{profile.email}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
+                                <Hash className="h-4 w-4 text-slate-500" />
+                                <div>
+                                    <p className="text-sm text-slate-600">Patient ID</p>
+                                    <p className="font-medium">{profile.id}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/files')}>
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-100 rounded-lg">
+                                    <FileText className="h-6 w-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold">Medical Reports</h3>
+                                    <p className="text-sm text-slate-600">View your test results</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/accesslist')}>
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-green-100 rounded-lg">
+                                    <Users className="h-6 w-6 text-green-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold">Access Control</h3>
+                                    <p className="text-sm text-slate-600">Manage data permissions</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/prescriptions')}>
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-purple-100 rounded-lg">
+                                    <Pill className="h-6 w-6 text-purple-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold">Prescriptions</h3>
+                                    <p className="text-sm text-slate-600">View medications</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
         </div>
     );
-}
+};
+
 export default PatientDashboard;
