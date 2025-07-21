@@ -123,21 +123,6 @@ const PatientFiles = () => {
         }
     };
 
-    const getFileExtension = (filename) => {
-        return filename.split('.').pop().toLowerCase();
-    };
-
-    const getFileIcon = (filename) => {
-        const ext = getFileExtension(filename);
-        if (['pdf'].includes(ext)) {
-            return <FileText className="h-4 w-4 text-red-500" />;
-        }
-        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
-            return <Image className="h-4 w-4 text-blue-500" />;
-        }
-        return <FileText className="h-4 w-4 text-slate-500" />;
-    };
-
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -217,13 +202,10 @@ const PatientFiles = () => {
                                         className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 group"
                                     >
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            {getFileIcon(file.filename)}
+                                            <FileText className="h-4 w-4 text-slate-500" />
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-medium text-slate-900 truncate">
                                                     {file.filename}
-                                                </p>
-                                                <p className="text-xs text-slate-500">
-                                                    {getFileExtension(file.filename).toUpperCase()} file
                                                 </p>
                                             </div>
                                         </div>

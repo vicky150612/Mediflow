@@ -1,6 +1,7 @@
 import express from 'express';
 import { connectDB } from '../db.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { ObjectId } from 'mongodb';
 const router = express.Router();
 
 // Get prescriptions
@@ -30,28 +31,60 @@ router.get('/', authMiddleware, async (req, res) => {
     }
 });
 
-// Add prescription by doctor
-router.post('/doc', authMiddleware, async (req, res) => {
+
+
+// Update prescription status
+router.put('/:id', authMiddleware, async (req, res) => {
     try {
         const db = await connectDB();
-        const doctorId = req.user.id;
-        const { prescription, patientId } = req.body;
-        if (!prescription || !patientId) {
-            return res.status(400).json({
-                success: false,
-                message: 'Prescription and patientId are required'
-            });
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!status || (status !== 'Active' && status !== 'Completed')) {
+            return res.status(400).json({ success: false, message: 'Invalid status provided.' });
         }
-        await db.collection('prescriptions').insertOne({ user: patientId, doctor: doctorId, prescription });
-        res.status(200).json({
-            success: true,
-            message: 'Prescription added successfully',
-        });
+        const prescription = await db.collection('prescriptions').findOne({ _id: new ObjectId(id) });
+        if (!prescription) {
+            return res.status(404).json({ success: false, message: 'Prescription not found.' });
+        }
+        if (prescription.user !== req.user.id) {
+            return res.status(403).json({ success: false, message: 'You are not authorized to update this prescription.' });
+        }
+        await db.collection('prescriptions').updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { status: status } }
+        );
+
+        res.status(200).json({ success: true, message: 'Prescription status updated successfully.' });
     } catch (error) {
-        console.error('Error adding prescription:', error);
+        console.error('Error updating prescription status:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to add prescription',
+            message: 'Failed to update prescription status.',
+            error: error.message
+        });
+    }
+});
+
+// Delete prescription
+router.delete('/:id', authMiddleware, async (req, res) => {
+    try {
+        const db = await connectDB();
+        const { id } = req.params;
+        const prescription = await db.collection('prescriptions').findOne({ _id: new ObjectId(id) });
+        if (!prescription) {
+            return res.status(404).json({ success: false, message: 'Prescription not found.' });
+        }
+        if (prescription.user !== req.user.id) {
+            return res.status(403).json({ success: false, message: 'You are not authorized to delete this prescription.' });
+        }
+        await db.collection('prescriptions').deleteOne({ _id: new ObjectId(id) });
+        res.status(200).json({ success: true, message: 'Prescription deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting prescription:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete prescription.',
             error: error.message
         });
     }

@@ -143,11 +143,27 @@ io.on('connection', (socket) => {
 
   // Receptionist marks as done
   socket.on('mark_as_done', async ({ patientDetails, doctorDetails, prescription, requestId }, func) => {
-    const db = await connectDB();
-    await db.collection('prescriptions').insertOne({ user: patientDetails.id, doctor: doctorDetails.id, prescription });
-    socket.emit('request_removed', { requestId });
-    if (typeof func === 'function') {
-      func({ success: true });
+    try {
+      const db = await connectDB();
+      const newPrescription = {
+        user: patientDetails.id,
+        doctor: doctorDetails.id,
+        doctorName: doctorDetails.name,
+        title: prescription.title,
+        details: prescription.details,
+        date: new Date(),
+        status: 'Active',
+      };
+      await db.collection('prescriptions').insertOne(newPrescription);
+      socket.emit('request_removed', { requestId });
+      if (typeof func === 'function') {
+        func({ success: true });
+      }
+    } catch (error) {
+      console.error('Error in mark_as_done:', error);
+      if (typeof func === 'function') {
+        func({ success: false, error: 'Failed to save prescription.' });
+      }
     }
   });
 

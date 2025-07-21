@@ -1,15 +1,15 @@
-import React, { useEffect, useState, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { io } from "socket.io-client";
 import {
     Search,
@@ -39,7 +39,7 @@ const DoctorDashboard = () => {
     const [patientLoading, setPatientLoading] = useState(false);
 
     // Prescription form state
-    const [prescription, setPrescription] = useState("");
+    const [prescription, setPrescription] = useState({ title: "", details: "" });
     const [prescriptionLoading, setPrescriptionLoading] = useState(false);
     const [prescriptionError, setPrescriptionError] = useState("");
     const [prescriptionSuccess, setPrescriptionSuccess] = useState("");
@@ -135,14 +135,14 @@ const DoctorDashboard = () => {
                     id: profile.id,
                     receptionist: profile.receptionist,
                 },
-                prescription,
+                prescription: prescription,
             }, (response) => {
                 if (response.success) {
                     setPrescriptionSuccess("Prescription sent to reception successfully!");
                     setTimeout(() => {
                         setPrescriptionLoading(false);
                         setShowPrescriptionModal(false);
-                        setPrescription("");
+                        setPrescription({ title: "", details: "" });
                         setPrescriptionSuccess("");
                         setPatient(null);
                         setSearch("");
@@ -161,7 +161,7 @@ const DoctorDashboard = () => {
 
     const handlePrescriptionModalClose = () => {
         setShowPrescriptionModal(false);
-        setPrescription("");
+        setPrescription({ title: "", details: "" });
         setPrescriptionError("");
         setPrescriptionSuccess("");
     };
@@ -360,15 +360,29 @@ const DoctorDashboard = () => {
                                             <DialogTitle>Add Prescription</DialogTitle>
                                         </DialogHeader>
                                         <form onSubmit={handlePrescriptionSubmit} className="space-y-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium">Prescription</label>
-                                                <Textarea
-                                                    value={prescription}
-                                                    onChange={(e) => setPrescription(e.target.value)}
-                                                    className="min-h-[120px]"
-                                                    rows={4}
-                                                    placeholder="Enter prescription details..."
-                                                />
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="prescription-title">Title</Label>
+                                                    <Input
+                                                        id="prescription-title"
+                                                        value={prescription.title}
+                                                        onChange={(e) => setPrescription(prev => ({ ...prev, title: e.target.value }))}
+                                                        placeholder="Prescription Title"
+                                                        required
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label htmlFor="prescription-details">Details</Label>
+                                                    <Textarea
+                                                        id="prescription-details"
+                                                        value={prescription.details}
+                                                        onChange={(e) => setPrescription(prev => ({ ...prev, details: e.target.value }))}
+                                                        className="min-h-[120px]"
+                                                        rows={4}
+                                                        placeholder="Prescription Details"
+                                                        required
+                                                    />
+                                                </div>
                                             </div>
 
                                             {prescriptionError && (
@@ -403,11 +417,10 @@ const DoctorDashboard = () => {
                             </div>
                         </CardContent>
                     </Card>
-                )
-                }
-            </div >
-        </div >
+                )}
+            </div>
+        </div>
     );
 }
 
-export default DoctorDashboard
+export default DoctorDashboard;

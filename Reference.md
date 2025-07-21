@@ -31,13 +31,13 @@ UI changes include
   - Manage access list (add/remove doctor)
   - View own details
   - View prescription history (`GET /prescription`)
+  - Prescriptions contain Title, Description, Date, and Status (Active/Inactive)
+  - Set prescriptions as inactive or delete them
 ### ❌ Missing / Left To Do
 - Edit uploaded files
 - AI agent
 - Security enhancements (confirmation dialogs, password reset)
 - Profile editing
-- Prescriptions contain Title, Description, Date, and Status (Active/Inactive)
-- Set prescriptions as inactive or delete them
 
 ---
 

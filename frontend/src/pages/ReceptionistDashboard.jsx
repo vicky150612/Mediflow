@@ -4,6 +4,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -29,7 +31,7 @@ import { io } from "socket.io-client";
 
 const ReceptionistDashboard = () => {
     const [editingIndex, setEditingIndex] = useState(null);
-    const [editedPrescription, setEditedPrescription] = useState("");
+    const [editedPrescription, setEditedPrescription] = useState({ title: "", details: "" });
     const [requests, setRequests] = useState([]);
     const socketRef = useRef(null);
     const [profile, setProfile] = useState(null);
@@ -112,12 +114,12 @@ const ReceptionistDashboard = () => {
 
     const handleEditClick = (idx, prescription) => {
         setEditingIndex(idx);
-        setEditedPrescription(prescription || "");
+        setEditedPrescription(prescription || { title: "", details: "" });
     };
     const handleCancelEdit = (e) => {
         if (e) e.preventDefault();
         setEditingIndex(null);
-        setEditedPrescription("");
+        setEditedPrescription({ title: "", details: "" });
     };
     const handleSaveEdit = (idx) => {
         setRequests(prev => prev.map((req, i) =>
@@ -276,27 +278,31 @@ const ReceptionistDashboard = () => {
 
                                                     {editingIndex === idx ? (
                                                         <div className="space-y-3">
-                                                            <Textarea
-                                                                value={editedPrescription}
-                                                                onChange={(e) => setEditedPrescription(e.target.value)}
-                                                                placeholder="Enter prescription details..."
-                                                                className="min-h-[100px] resize-none"
-                                                            />
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor={`prescription-title-${idx}`}>Title</Label>
+                                                                <Input
+                                                                    id={`prescription-title-${idx}`}
+                                                                    value={editedPrescription.title}
+                                                                    onChange={(e) => setEditedPrescription(prev => ({ ...prev, title: e.target.value }))}
+                                                                    placeholder="Prescription Title"
+                                                                />
+                                                            </div>
+                                                            <div className="space-y-2">
+                                                                <Label htmlFor={`prescription-details-${idx}`}>Details</Label>
+                                                                <Textarea
+                                                                    id={`prescription-details-${idx}`}
+                                                                    value={editedPrescription.details}
+                                                                    onChange={(e) => setEditedPrescription(prev => ({ ...prev, details: e.target.value }))}
+                                                                    placeholder="Prescription Details"
+                                                                    className="min-h-[100px] resize-none"
+                                                                />
+                                                            </div>
                                                             <div className="flex gap-2">
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={() => handleSaveEdit(idx)}
-                                                                    className="flex items-center gap-2"
-                                                                >
+                                                                <Button size="sm" onClick={() => handleSaveEdit(idx)} className="flex items-center gap-2">
                                                                     <Save className="h-3 w-3" />
                                                                     Save Changes
                                                                 </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    onClick={handleCancelEdit}
-                                                                    className="flex items-center gap-2"
-                                                                >
+                                                                <Button size="sm" variant="outline" onClick={handleCancelEdit} className="flex items-center gap-2">
                                                                     <X className="h-3 w-3" />
                                                                     Cancel
                                                                 </Button>
@@ -304,23 +310,22 @@ const ReceptionistDashboard = () => {
                                                         </div>
                                                     ) : (
                                                         <div>
-                                                            {req.prescription ? (
+                                                            {req.prescription && (req.prescription.title || req.prescription.details) ? (
                                                                 <div
                                                                     className="bg-muted/50 rounded-lg p-4 cursor-pointer hover:bg-muted/70 transition-colors border border-dashed border-muted-foreground/25"
                                                                     onClick={() => handleEditClick(idx, req.prescription)}
                                                                 >
                                                                     <div className="flex items-start justify-between">
-                                                                        <p className="text-sm text-muted-foreground mb-2">
-                                                                            Click to edit prescription
-                                                                        </p>
+                                                                        <p className="text-sm text-muted-foreground mb-2">Click to edit prescription</p>
                                                                         <Edit3 className="h-4 w-4 text-muted-foreground" />
                                                                     </div>
-                                                                    <p className="text-sm">{req.prescription}</p>
+                                                                    <h4 className="font-semibold">{req.prescription.title}</h4>
+                                                                    <p className="text-sm whitespace-pre-wrap">{req.prescription.details}</p>
                                                                 </div>
                                                             ) : (
                                                                 <div
                                                                     className="bg-muted/30 rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors border border-dashed border-muted-foreground/25"
-                                                                    onClick={() => handleEditClick(idx, "")}
+                                                                    onClick={() => handleEditClick(idx, { title: "", details: "" })}
                                                                 >
                                                                     <div className="flex items-center justify-center gap-2 text-muted-foreground">
                                                                         <Edit3 className="h-4 w-4" />
