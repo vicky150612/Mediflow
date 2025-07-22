@@ -28,13 +28,35 @@ import {
     Loader2
 } from "lucide-react";
 import { io } from "socket.io-client";
+import { ReactMediaRecorder } from "react-media-recorder";
 
 const ReceptionistDashboard = () => {
+    const uploadAudioToCloud = async (blob) => {
+        try {
+            const fileType = blob.type || 'audio/webm';
+            const file = new File([blob], `reception-audio-${Date.now()}.webm`, { type: fileType });
+            const formData = new FormData();
+            formData.append('audio', file);
+            const res = await fetch(`${backendUrl}/upload/audio`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: formData,
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return { url: data.url, public_id: data.public_id };
+            }
+        } catch (err) {
+            console.error('Audio upload error:', err);
+        }
+        return null;
+    };
     const [editingIndex, setEditingIndex] = useState(null);
     const [editedPrescription, setEditedPrescription] = useState({ title: "", details: "" });
     const [requests, setRequests] = useState([]);
     const socketRef = useRef(null);
     const [profile, setProfile] = useState(null);
+    const [localAudio, setLocalAudio] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const navigate = useNavigate();
@@ -101,12 +123,23 @@ const ReceptionistDashboard = () => {
         fetchProfile();
     }, [backendUrl]);
 
-    const handleMarkAsDone = (doctorDetails, patientDetails, prescription, requestId) => {
+    const handleMarkAsDone = async (doctorDetails, patientDetails, prescription, requestId, audioDetailsFromReq = null) => {
         if (socketRef.current) {
+            let audioDetails = audioDetailsFromReq || (prescription && prescription.audioDetails) || null;
+            if (!audioDetails && localAudio[requestId]?.blob) {
+                const uploaded = await uploadAudioToCloud(localAudio[requestId].blob);
+                if (uploaded) {
+                    audioDetails = uploaded;
+                }
+            }
+            if (audioDetails && (!audioDetails.url || audioDetails.url === '')) {
+                audioDetails = null;
+            }
             socketRef.current.emit("mark_as_done", {
                 patientDetails,
                 doctorDetails,
                 prescription,
+                audioDetails: audioDetails || null,
                 requestId,
             });
         }
@@ -275,6 +308,81 @@ const ReceptionistDashboard = () => {
                                                         <FileText className="h-4 w-4" />
                                                         <span>Prescription Details</span>
                                                     </div>
+                                                    {(req.audioDetails?.url || req.prescription?.audioDetails?.url) && (
+                                                        <div className="mt-2">
+                                                            <label className="block text-xs text-muted-foreground mb-1">Audio Instructions</label>
+                                                            <audio
+                                                                controls
+                                                                src={req.audioDetails?.url || req.prescription?.audioDetails?.url}
+                                                                className="w-full rounded shadow border border-muted-foreground/20"
+                                                            >
+                                                                Your browser does not support the audio element.
+                                                            </audio>
+                                                        </div>
+                                                    )}
+                                                    {/* If no audio present, allow receptionist to record */}
+                                                    {!(req.audioDetails?.url || req.prescription?.audioDetails?.url) && (
+                                                        <div className="mt-2">
+                                                            <label className="block text-xs text-muted-foreground mb-2">Audio Instructions (optional)</label>
+                                                            <ReactMediaRecorder
+                                                                audio
+                                                                render={({ status, startRecording, stopRecording, mediaBlobUrl, clearBlob }) => (
+                                                                    <div className="flex flex-col gap-2">
+                                                                        <div className="flex gap-2 items-center">
+                                                                            <Button type="button" size="sm" onClick={startRecording} disabled={status === 'recording'}>
+                                                                                {status === 'recording' ? 'Recording...' : 'Start Recording'}
+                                                                            </Button>
+                                                                            <Button type="button" size="sm" onClick={stopRecording} disabled={status !== 'recording'}>
+                                                                                Stop
+                                                                            </Button>
+                                                                            <Button
+                                                                                type="button"
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => {
+                                                                                    clearBlob();
+                                                                                    setLocalAudio(prev => {
+                                                                                        const updated = { ...prev };
+                                                                                        delete updated[req.requestId];
+                                                                                        return updated;
+                                                                                    });
+                                                                                }}
+                                                                                disabled={!mediaBlobUrl}
+                                                                            >
+                                                                                Clear
+                                                                            </Button>
+                                                                        </div>
+                                                                        {mediaBlobUrl && (
+                                                                            <div className="flex flex-col gap-2 mt-2">
+                                                                                <audio controls src={mediaBlobUrl} className="w-full rounded border border-muted-foreground/20" />
+                                                                                <span className="text-xs text-muted-foreground">Preview your recording</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {mediaBlobUrl && !localAudio[req.requestId]?.blob && (
+                                                                            <Button
+                                                                                type="button"
+                                                                                size="sm"
+                                                                                onClick={async () => {
+                                                                                    const response = await fetch(mediaBlobUrl);
+                                                                                    const blob = await response.blob();
+                                                                                    const uploaded = await uploadAudioToCloud(blob);
+                                                                                    if (uploaded) {
+                                                                                        setRequests(prev => prev.map(r => r.requestId === req.requestId ? { ...r, audioDetails: uploaded } : r));
+                                                                                        setLocalAudio(prev => ({ ...prev, [req.requestId]: { blob, url: uploaded.url, uploaded: true, audioDetails: uploaded } }));
+                                                                                    }
+                                                                                }}
+                                                                            >
+                                                                                Attach Recording
+                                                                            </Button>
+                                                                        )}
+                                                                        {(req.audioDetails?.url || localAudio[req.requestId]?.uploaded) && (
+                                                                            <div className="text-xs text-green-600 font-medium">✓ Audio uploaded and ready</div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            />
+                                                        </div>
+                                                    )}
 
                                                     {editingIndex === idx ? (
                                                         <div className="space-y-3">
@@ -345,7 +453,8 @@ const ReceptionistDashboard = () => {
                                                             req.doctorDetails,
                                                             req.patientDetails,
                                                             req.prescription,
-                                                            req.requestId
+                                                            req.requestId,
+                                                            req.audioDetails
                                                         )}
                                                         className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
                                                     >

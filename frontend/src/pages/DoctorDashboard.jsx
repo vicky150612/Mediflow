@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { io } from "socket.io-client";
+import { ReactMediaRecorder } from "react-media-recorder";
 import {
     Search,
     User,
@@ -40,6 +41,9 @@ const DoctorDashboard = () => {
 
     // Prescription form state
     const [prescription, setPrescription] = useState({ title: "", details: "" });
+    const [audioBlob, setAudioBlob] = useState(null);
+    const [audioUrl, setAudioUrl] = useState("");
+    const [audio, setAudio] = useState(null);
     const [prescriptionLoading, setPrescriptionLoading] = useState(false);
     const [prescriptionError, setPrescriptionError] = useState("");
     const [prescriptionSuccess, setPrescriptionSuccess] = useState("");
@@ -121,6 +125,29 @@ const DoctorDashboard = () => {
         setPrescriptionSuccess("");
         setPrescriptionLoading(true);
 
+        let audioDetailsToSend = audio;
+        if (!audio && audioBlob) {
+            try {
+                const fileType = audioBlob.type || 'audio/webm';
+                const file = new File([audioBlob], `doctor-audio-${Date.now()}.webm`, { type: fileType });
+                const formData = new FormData();
+                formData.append('audio', file);
+                const res = await fetch(`${backendUrl}/upload/audio`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                    body: formData
+                });
+                if (!res.ok) throw new Error('Audio upload failed');
+                const data = await res.json();
+                audioDetailsToSend = { url: data.url, public_id: data.public_id };
+                setAudio(audioDetailsToSend);
+            } catch (err) {
+                setPrescriptionError('Failed to upload audio: ' + (err.message || ''));
+                setPrescriptionLoading(false);
+                return;
+            }
+        }
+
         if (socketRef.current) {
             socketRef.current.emit("send_to_reception", {
                 receptionistId: profile.receptionist,
@@ -135,7 +162,8 @@ const DoctorDashboard = () => {
                     id: profile.id,
                     receptionist: profile.receptionist,
                 },
-                prescription: prescription,
+                prescription: { ...prescription },
+                audioDetails: audioDetailsToSend || null
             }, (response) => {
                 if (response.success) {
                     setPrescriptionSuccess("Prescription sent to reception successfully!");
@@ -147,6 +175,9 @@ const DoctorDashboard = () => {
                         setPatient(null);
                         setSearch("");
                         setError("");
+                        setAudioBlob(null);
+                        setAudioUrl("");
+                        setAudio(null);
                     }, 1000);
                 } else {
                     setPrescriptionError("Failed to deliver to receptionist. Please try again.");
@@ -162,6 +193,8 @@ const DoctorDashboard = () => {
     const handlePrescriptionModalClose = () => {
         setShowPrescriptionModal(false);
         setPrescription({ title: "", details: "" });
+        setAudioBlob(null);
+        setAudioUrl("");
         setPrescriptionError("");
         setPrescriptionSuccess("");
     };
@@ -368,7 +401,6 @@ const DoctorDashboard = () => {
                                                         value={prescription.title}
                                                         onChange={(e) => setPrescription(prev => ({ ...prev, title: e.target.value }))}
                                                         placeholder="Prescription Title"
-                                                        required
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
@@ -380,7 +412,44 @@ const DoctorDashboard = () => {
                                                         className="min-h-[120px]"
                                                         rows={4}
                                                         placeholder="Prescription Details"
-                                                        required
+                                                    />
+                                                </div>
+                                                <div className="mt-4">
+                                                    <label className="block font-medium mb-1">Audio Instructions (optional)</label>
+                                                    <ReactMediaRecorder
+                                                        audio
+                                                        render={({ status, startRecording, stopRecording, mediaBlobUrl, clearBlob }) => (
+                                                            <div className="flex flex-col gap-2">
+                                                                <div className="flex gap-2 items-center">
+                                                                    <Button type="button" size="sm" onClick={startRecording} disabled={status === 'recording'}>
+                                                                        {status === 'recording' ? 'Recording...' : 'Start Recording'}
+                                                                    </Button>
+                                                                    <Button type="button" size="sm" onClick={stopRecording} disabled={status !== 'recording'}>
+                                                                        Stop
+                                                                    </Button>
+                                                                    <Button type="button" size="sm" variant="outline" onClick={() => { clearBlob(); setAudioBlob(null); setAudioUrl(""); setAudio(null); }} disabled={!mediaBlobUrl}>
+                                                                        Clear
+                                                                    </Button>
+                                                                </div>
+                                                                {mediaBlobUrl && (
+                                                                    <div className="flex flex-col gap-2 mt-2">
+                                                                        <audio controls src={mediaBlobUrl} className="w-full" />
+                                                                        <span className="text-xs text-muted-foreground">Preview your recording</span>
+                                                                    </div>
+                                                                )}
+                                                                {mediaBlobUrl && (
+                                                                    <input type="hidden" value={mediaBlobUrl} />
+                                                                )}
+                                                                {mediaBlobUrl && !audioBlob && (
+                                                                    <Button type="button" size="sm" onClick={async () => {
+                                                                        const res = await fetch(mediaBlobUrl);
+                                                                        const blob = await res.blob();
+                                                                        setAudioBlob(blob);
+                                                                        setAudioUrl(mediaBlobUrl);
+                                                                    }}>Attach Recording</Button>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     />
                                                 </div>
                                             </div>

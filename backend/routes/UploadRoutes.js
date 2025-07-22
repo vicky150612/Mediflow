@@ -12,6 +12,21 @@ async function Savetodb(filedetailes) {
     await db.collection('files').insertOne(filedetailes);
 }
 
+// Upload audio file to cloudinary (for prescription audio)
+uploadRouter.post('/audio', authMiddleware, upload.single('audio'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ message: 'No audio file uploaded' });
+    }
+    const stream = cloudinary.v2.uploader.upload_stream({ resource_type: 'video', folder: 'Mediflow_Audio' }, (error, result) => {
+        if (error) {
+            console.log("Error uploading audio", error);
+            return res.status(500).json({ message: 'Error uploading audio', cloudinaryError: error.message || error });
+        }
+        return res.json({ url: result.secure_url, public_id: result.public_id, format: result.format });
+    });
+    stream.end(req.file.buffer);
+});
+
 // Upload file to cloudinary (PDF or Image)
 uploadRouter.post('/', authMiddleware, upload.single('file'), (req, res) => {
     if (!req.file) {

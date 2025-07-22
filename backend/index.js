@@ -89,7 +89,7 @@ app.delete('/me', authMiddleware, async (req, res) => {
   const files = await db.collection('files').find({ user: id }).toArray();
   for (const file of files) {
     const publicId = file.public_id;
-    cloudinary.uploader.destroy(publicId, function (error, result) {
+    cloudinary.v2.uploader.destroy(publicId, function (error, result) {
       console.log(result, error);
     });
   }
@@ -123,7 +123,7 @@ io.on('connection', (socket) => {
   });
 
   // Doctor sends patient details to a receptionist
-  socket.on('send_to_reception', ({ receptionistId, patientDetails, doctorDetails, prescription }, func) => {
+  socket.on('send_to_reception', ({ receptionistId, patientDetails, doctorDetails, prescription, audioDetails }, func) => {
     const rec = usersocketmap[receptionistId];
     let delivered = false;
     if (rec && rec.socketId) {
@@ -131,6 +131,7 @@ io.on('connection', (socket) => {
         patientDetails,
         doctorDetails,
         prescription,
+        audioDetails,
         requestId: `${doctorDetails.id}_${Date.now()}`
       });
       delivered = true;
@@ -142,7 +143,7 @@ io.on('connection', (socket) => {
 
 
   // Receptionist marks as done
-  socket.on('mark_as_done', async ({ patientDetails, doctorDetails, prescription, requestId }, func) => {
+  socket.on('mark_as_done', async ({ patientDetails, doctorDetails, prescription, audioDetails, requestId }, func) => {
     try {
       const db = await connectDB();
       const newPrescription = {
@@ -151,6 +152,7 @@ io.on('connection', (socket) => {
         doctorName: doctorDetails.name,
         title: prescription.title,
         details: prescription.details,
+        audioDetails: audioDetails,
         date: new Date(),
         status: 'Active',
       };

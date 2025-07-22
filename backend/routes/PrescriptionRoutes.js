@@ -2,6 +2,7 @@ import express from 'express';
 import { connectDB } from '../db.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { ObjectId } from 'mongodb';
+import cloudinary from 'cloudinary';
 const router = express.Router();
 
 // Get prescriptions
@@ -77,6 +78,11 @@ router.delete('/:id', authMiddleware, async (req, res) => {
         }
         if (prescription.user !== req.user.id) {
             return res.status(403).json({ success: false, message: 'You are not authorized to delete this prescription.' });
+        }
+        const audioDetails = prescription.audioDetails;
+        if (audioDetails) {
+            const publicId = audioDetails.public_id;
+            const result = await cloudinary.v2.uploader.destroy(publicId, { resource_type: "video", type: "upload" });
         }
         await db.collection('prescriptions').deleteOne({ _id: new ObjectId(id) });
         res.status(200).json({ success: true, message: 'Prescription deleted successfully.' });

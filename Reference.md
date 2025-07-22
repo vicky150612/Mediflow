@@ -33,6 +33,7 @@ UI changes include
   - View prescription history (`GET /prescription`)
   - Prescriptions contain Title, Description, Date, and Status (Active/Inactive)
   - Set prescriptions as inactive or delete them
+  - Voice recording
 ### ❌ Missing / Left To Do
 - Edit uploaded files
 - AI agent
@@ -51,6 +52,7 @@ UI changes include
   - Add prescription
   - Select receptionist and send patient details (real-time via Socket.IO)
   - See when requests are marked as done (real-time feedback)
+  - Voice recording
   - Logout
 - **Signup Page**
   - Two-step email verification (frontend flow)
@@ -79,6 +81,7 @@ UI changes include
 - **General**
   - Unified modal/dialog UI
   - Mobile responsive
+  - Voice recording
 
 ### ❌ Missing / Left To Do
 - Billing (optional)
@@ -94,7 +97,6 @@ UI changes include
 - No security enhancements (confirmation dialogs for sensitive actions, etc.)
 - No landing page
 - No AI
-- No voice recording
 
 ---
 

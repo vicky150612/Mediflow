@@ -167,6 +167,14 @@ const PatientPrescriptions = () => {
                                             <div className="mb-4">
                                                 <p className="text-base font-medium mb-2">Details</p>
                                                 <p className="whitespace-pre-line text-slate-700 mb-2">{prescription.details}</p>
+                                                {prescription.audioDetails && prescription.audioDetails.url && (
+                                                    <div className="mt-3">
+                                                        <label className="block text-xs text-muted-foreground mb-1">Audio Instructions</label>
+                                                        <audio controls src={prescription.audioDetails.url} className="w-full rounded shadow border border-muted-foreground/20">
+                                                            Your browser does not support the audio element.
+                                                        </audio>
+                                                    </div>
+                                                )}
                                                 <Badge
                                                     variant={prescription.status === 'Active' ? 'default' : 'secondary'}
                                                     className={`text-xs ${prescription.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'}`}
