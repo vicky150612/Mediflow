@@ -10,6 +10,7 @@ import PatientAccesslist from "./pages/PatientAccesslist";
 import PatientPrescriptions from "./pages/PatientPrescriptions";
 import Profile from "./pages/Profile";
 import LandingPage from "./pages/LandingPage";
+import AIChat from "./pages/AIChat";
 
 const root = document.getElementById("root");
 
@@ -24,6 +25,7 @@ ReactDOM.createRoot(root).render(
       <Route path="/accesslist" element={<PatientAccesslist />} />
       <Route path="/prescriptions" element={<PatientPrescriptions />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/ai" element={<AIChat />} />
     </Routes>
   </BrowserRouter>
 );

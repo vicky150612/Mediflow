@@ -13,7 +13,8 @@ import {
     Mail,
     Hash,
     Activity,
-    Loader2
+    Loader2,
+    Bot
 } from "lucide-react";
 import "../index.css";
 
@@ -157,6 +158,19 @@ const PatientDashboard = () => {
                                 <div>
                                     <h3 className="font-semibold">Prescriptions</h3>
                                     <p className="text-sm text-slate-600">View medications</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="hover:shadow-md transition-shadow cursor-pointer md:col-start-2" onClick={() => navigate('/ai')}>
+                        <CardContent className="p-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-purple-100 rounded-lg">
+                                    <Bot className="h-6 w-6 text-black" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold">AI Chat</h3>
+                                    <p className="text-sm text-slate-600">Chat with AI</p>
                                 </div>
                             </div>
                         </CardContent>

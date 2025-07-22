@@ -34,9 +34,9 @@ UI changes include
   - Prescriptions contain Title, Description, Date, and Status (Active/Inactive)
   - Set prescriptions as inactive or delete them
   - Voice recording
+  - AI Chat (Gemini)
 ### ❌ Missing / Left To Do
 - Edit uploaded files
-- AI agent
 - Security enhancements (confirmation dialogs, password reset)
 - Profile editing
 
@@ -96,7 +96,6 @@ UI changes include
 - No dark mode
 - No security enhancements (confirmation dialogs for sensitive actions, etc.)
 - No landing page
-- No AI
 
 ---
 

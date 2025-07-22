@@ -15,6 +15,7 @@ import patientRoutes from './routes/PatientRoutes.js';
 import uploadRoutes from './routes/UploadRoutes.js';
 import doctorRoutes from './routes/DoctorRoutes.js';
 import prescriptionRoutes from './routes/PrescriptionRoutes.js';
+import aiRoutes from './routes/AIRoutes.js';
 
 import { ObjectId } from 'mongodb';
 
@@ -107,6 +108,7 @@ app.use('/patient', patientRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/doctor', doctorRoutes);
 app.use('/prescription', prescriptionRoutes);
+app.use('/ai', aiRoutes);
 
 
 // Map user id to array of { socketId, role, name }
