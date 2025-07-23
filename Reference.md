@@ -37,7 +37,7 @@ UI changes include
   - AI Chat (Gemini)
 ### ❌ Missing / Left To Do
 - Edit uploaded files
-- Security enhancements (confirmation dialogs, password reset)
+- Security enhancements (confirmation dialogs)
 - Profile editing
 
 ---
@@ -63,7 +63,6 @@ UI changes include
   - Fetch patient details, add prescription
 
 ### ❌ Missing / Left To Do
-- Edit doctor profile
 - Acsess to patient prescriptions
 
 ---
@@ -91,8 +90,6 @@ UI changes include
 
 ## 🔐 General System Issues
 - No activity log
-- No password reset/change functionality
-- No profile editing
 - No dark mode
 - No security enhancements (confirmation dialogs for sensitive actions, etc.)
 - No landing page

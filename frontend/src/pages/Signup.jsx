@@ -9,15 +9,6 @@ import {
     InputOTPSlot,
 } from "@/components/ui/input-otp";
 import "../index.css";
-import emailjs from '@emailjs/browser';
-
-emailjs.init({
-    publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-    limitRate: {
-        id: 'app',
-        throttle: 10000,
-    },
-});
 
 const Signup = () => {
     const backendUrl = import.meta.env.VITE_Backend_URL;
@@ -30,19 +21,19 @@ const Signup = () => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({});
     const [inputCode, setInputCode] = useState('');
-    const [verificationCode, setVerificationCode] = useState(null);
     const [sending, setSending] = useState(false);
 
-    const sendEmail = async (email, code) => {
+    const requestCode = async (email) => {
         try {
-            await emailjs.send(
-                import.meta.env.VITE_EMAILJS_SERVICE_ID,
-                import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-                {
-                    email: email,
-                    passcode: code,
-                }
-            );
+            const res = await fetch(`${backendUrl}/signup/send-code`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.message || 'Failed to send code');
+            }
         } catch (error) {
             console.error('Email sending failed:', error);
             throw error;
@@ -60,15 +51,12 @@ const Signup = () => {
         data.role = role;
         if (role !== 'doctor') delete data.registrationNumber;
 
-        const code = Math.floor(Math.random() * 900000) + 100000;
-
         try {
-            await sendEmail(data.email, code);
-            setVerificationCode(code);
+            await requestCode(data.email);
             setFormData(data);
             setStep(2);
         } catch (err) {
-            setError('Failed to send verification email.');
+            setError(err.message);
             console.error(err);
         } finally {
             setSending(false);
@@ -80,16 +68,11 @@ const Signup = () => {
         setError('');
         setSuccess('');
 
-        if (inputCode !== verificationCode?.toString()) {
-            setError('Invalid verification code');
-            return;
-        }
-
         try {
             const res = await fetch(`${backendUrl}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({ ...formData, code: inputCode }),
             });
 
             if (res.ok) {
@@ -102,7 +85,7 @@ const Signup = () => {
                 setError(result.message || 'Signup failed');
             }
         } catch (err) {
-            setError('Network error' + (err.message ? `: ${err.message}` : ''));
+            setError(err.message || 'Network error');
         }
     };
 
@@ -112,7 +95,7 @@ const Signup = () => {
         setSending(true);
 
         try {
-            await sendEmail(formData.email, verificationCode);
+            await requestCode(formData.email);
             setSuccess('Verification code resent.');
         } catch {
             setError('Failed to resend code.');
