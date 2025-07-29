@@ -92,7 +92,7 @@ UI changes include
 - No activity log
 - No dark mode
 - No security enhancements (confirmation dialogs for sensitive actions, etc.)
-- No landing page
+- Connect all the links in landing page to the correct pages.
 
 ---
 
