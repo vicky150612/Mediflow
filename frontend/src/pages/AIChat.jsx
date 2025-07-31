@@ -95,7 +95,7 @@ const AIChat = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4">
+        <div className="min-h-screen bg-background p-4 text-foreground">
             <div className="max-w-2xl mx-auto h-[calc(100vh-2rem)] flex flex-col space-y-4">
                 <div className="flex items-center gap-3">
                     <Button
@@ -107,18 +107,18 @@ const AIChat = () => {
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-bold text-slate-900">AI Assistant</h1>
-                        <p className="text-sm text-slate-600">Ask about your medications</p>
+                        <h1 className="text-xl font-bold">AI Assistant</h1>
+                        <p className="text-sm text-muted-foreground">Ask about your medications</p>
                     </div>
                 </div>
 
-                <Card className="flex-1 flex flex-col min-h-0">
+                <Card className="flex-1 flex flex-col min-h-0 bg-card text-foreground">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-base flex items-center gap-2">
                             <MessageSquare className="h-4 w-4" />
                             Chat
                             {loading && (
-                                <span className="text-xs font-normal text-slate-500 flex items-center gap-1">
+                                <span className="text-xs font-normal text-muted-foreground flex items-center gap-1">
                                     <Loader2 className="h-3 w-3 animate-spin" />
                                     Typing...
                                 </span>
@@ -139,12 +139,12 @@ const AIChat = () => {
                                     >
                                         <div
                                             className={`
-                                                max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap
-                                                ${message.role === "user"
+                        max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap
+                        ${message.role === "user"
                                                     ? "bg-primary text-primary-foreground"
-                                                    : "bg-slate-100 text-slate-800"
+                                                    : "bg-muted text-muted-foreground"
                                                 }
-                                            `}
+                      `}
                                         >
                                             {message.text}
                                         </div>
@@ -153,12 +153,12 @@ const AIChat = () => {
 
                                 {loading && (
                                     <div className="flex justify-start">
-                                        <div className="bg-slate-100 rounded-lg px-3 py-2">
+                                        <div className="bg-muted rounded-lg px-3 py-2">
                                             <div className="flex items-center gap-2">
                                                 <div className="flex space-x-1">
-                                                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
-                                                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                                                    <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                                                    <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce"></div>
+                                                    <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                                                    <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -172,13 +172,13 @@ const AIChat = () => {
                         {error && (
                             <div className="px-4 pb-2">
                                 <Alert variant="destructive">
-                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertCircle className="h-4 w-4 text-destructive" />
                                     <AlertDescription className="text-sm">{error}</AlertDescription>
                                 </Alert>
                             </div>
                         )}
 
-                        <div className="border-t p-3">
+                        <div className="border-t border-border p-3">
                             <div className="flex gap-2">
                                 <Textarea
                                     ref={textareaRef}
@@ -186,7 +186,7 @@ const AIChat = () => {
                                     onChange={e => setInput(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Ask about medications, side effects..."
-                                    className="resize-none min-h-[40px] max-h-24 text-sm"
+                                    className="resize-none min-h-[40px] max-h-24 text-sm bg-background text-foreground placeholder:text-muted-foreground border border-border rounded-md px-3 py-2"
                                     disabled={loading}
                                     rows={1}
                                 />
@@ -203,7 +203,7 @@ const AIChat = () => {
                                     )}
                                 </Button>
                             </div>
-                            <p className="text-xs text-slate-500 mt-1 px-1">
+                            <p className="text-xs text-muted-foreground mt-1 px-1">
                                 Press Enter to send • Shift+Enter for new line
                             </p>
                         </div>

@@ -11,21 +11,24 @@ import PatientPrescriptions from "./pages/PatientPrescriptions";
 import Profile from "./pages/Profile";
 import LandingPage from "./pages/LandingPage";
 import AIChat from "./pages/AIChat";
+import { ThemeProvider } from "./components/ui/theme-provider";
 
 const root = document.getElementById("root");
 
 ReactDOM.createRoot(root).render(
   <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/files" element={<PatientFiles />} />
-      <Route path="/accesslist" element={<PatientAccesslist />} />
-      <Route path="/prescriptions" element={<PatientPrescriptions />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/ai" element={<AIChat />} />
-    </Routes>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/files" element={<PatientFiles />} />
+        <Route path="/accesslist" element={<PatientAccesslist />} />
+        <Route path="/prescriptions" element={<PatientPrescriptions />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/ai" element={<AIChat />} />
+      </Routes>
+    </ThemeProvider>
   </BrowserRouter>
 );

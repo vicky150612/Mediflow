@@ -27,10 +27,13 @@ import {
     Phone,
     Loader2
 } from "lucide-react";
+import { ModeToggle } from "@/components/Toggle";
 import { io } from "socket.io-client";
 import { ReactMediaRecorder } from "react-media-recorder";
 
 const ReceptionistDashboard = () => {
+    const backendUrl = import.meta.env.VITE_Backend_URL;
+    const navigate = useNavigate();
     const uploadAudioToCloud = async (blob) => {
         try {
             const fileType = blob.type || 'audio/webm';
@@ -59,13 +62,11 @@ const ReceptionistDashboard = () => {
     const [localAudio, setLocalAudio] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const navigate = useNavigate();
-    const backendUrl = import.meta.env.VITE_Backend_URL;
 
     useEffect(() => {
         if (!profile) return;
         if (socketRef.current) return;
-        const socket = io(import.meta.env.VITE_Backend_URL, {
+        const socket = io(backendUrl, {
             transports: ["websocket"],
             auth: {
                 token: localStorage.getItem("token"),
@@ -99,7 +100,7 @@ const ReceptionistDashboard = () => {
                 socketRef.current = null;
             }
         };
-    }, [profile]);
+    }, [profile, backendUrl]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -142,6 +143,7 @@ const ReceptionistDashboard = () => {
                 audioDetails: audioDetails || null,
                 requestId,
             });
+            setRequests(prev => prev.filter(req => req.requestId !== requestId));
         }
     };
 
@@ -159,9 +161,8 @@ const ReceptionistDashboard = () => {
             i === idx ? { ...req, prescription: editedPrescription } : req
         ));
         setEditingIndex(null);
-        setEditedPrescription("");
+        setEditedPrescription({ title: "", details: "" });
     };
-
 
     const formatTime = (timestamp) => {
         if (!timestamp) return '';
@@ -171,10 +172,10 @@ const ReceptionistDashboard = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-muted">
-                <Card className="w-full max-w-md">
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Card className="w-full max-w-md shadow-lg bg-card text-foreground border border-border">
                     <CardContent className="flex flex-col items-center justify-center p-8">
-                        <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
                         <p className="text-muted-foreground">Loading your dashboard...</p>
                     </CardContent>
                 </Card>
@@ -183,34 +184,35 @@ const ReceptionistDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-muted p-4">
+        <div className="min-h-screen bg-background p-4 text-foreground">
             <div className="max-w-6xl mx-auto space-y-6">
-                <Card className="border-0 shadow-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                <Card className="border-0 shadow-lg bg-card text-foreground">
                     <CardHeader className="pb-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                <div className="p-3 bg-white/20 rounded-full">
-                                    <Phone className="h-6 w-6" />
+                                <div className="p-3 bg-muted rounded-full">
+                                    <Phone className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
                                     <CardTitle className="text-2xl font-bold">
                                         Welcome, {profile?.name || 'Receptionist'}
                                     </CardTitle>
-                                    <CardDescription className="text-purple-100 mt-1">
+                                    <CardDescription className="text-muted-foreground mt-1">
                                         Managing incoming prescription requests
                                     </CardDescription>
                                 </div>
                             </div>
                             <div className="flex items-center space-x-4">
-                                <div className="flex items-center space-x-2 text-sm">
+                                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                                     <Calendar className="h-4 w-4" />
                                     <span>{new Date().toLocaleDateString()}</span>
                                 </div>
+                                <ModeToggle />
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="bg-white/10 border-white/20 hover:bg-white/20 text-white"
-                                    onClick={() => navigate('/profile')}>
+                                    onClick={() => navigate('/profile')}
+                                >
                                     <User className="h-4 w-4 mr-2" />
                                     Profile
                                 </Button>
@@ -224,7 +226,6 @@ const ReceptionistDashboard = () => {
                                         localStorage.removeItem("token");
                                         navigate("/login");
                                     }}
-                                    className="bg-white/10 border-white/20 hover:bg-white/20 text-white"
                                 >
                                     <LogOut className="h-4 w-4 mr-2" />
                                     Logout
@@ -236,21 +237,22 @@ const ReceptionistDashboard = () => {
 
                 {error && (
                     <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
+                        <AlertCircle className="h-4 w-4 text-destructive" />
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
 
-                <Card className="shadow-lg">
+                <Card className="shadow-lg bg-card text-foreground border border-border">
                     <CardHeader>
                         <div className="flex flex-col gap-3">
                             <div className="flex items-center justify-between w-full">
                                 <CardTitle className="flex items-center gap-2">
-                                    <Bell className="h-5 w-5 text-blue-600" />
+                                    <Bell className="h-5 w-5 text-primary" />
                                     Incoming Prescription Requests
                                 </CardTitle>
                                 <span
-                                    className="inline-flex items-center bg-black/90 text-white font-bold text-lg px-4 py-1 rounded-full shadow-md border-2 border-black">
+                                    className="inline-flex items-center bg-muted text-muted-foreground font-bold text-lg px-4 py-1 rounded-full shadow-md border border-border"
+                                >
                                     <Clock className="h-5 w-5 mr-2" />
                                     {requests.length} Pending
                                 </span>
@@ -259,29 +261,27 @@ const ReceptionistDashboard = () => {
                     </CardHeader>
                     <CardContent>
                         {requests.length === 0 ? (
-                            <div className="text-center py-12">
-                                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                <h3 className="text-lg font-semibold text-muted-foreground mb-2">No requests yet</h3>
-                                <p className="text-sm text-muted-foreground">
-                                    New prescription requests from doctors will appear here automatically
-                                </p>
+                            <div className="text-center py-12 text-muted-foreground">
+                                <MessageSquare className="h-12 w-12 mx-auto mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">No requests yet</h3>
+                                <p>New prescription requests from doctors will appear here automatically</p>
                             </div>
                         ) : (
                             <ScrollArea className="h-[500px] pr-4">
                                 <div className="space-y-4">
                                     {requests.map((req, idx) => (
-                                        <Card key={req.requestId || idx} className="border-l-4 border-l-blue-500 transition-all hover:shadow-md">
+                                        <Card key={req.requestId || idx} className="border-l-4 border-l-primary transition-all hover:shadow-md bg-card text-foreground">
                                             <CardContent className="p-6">
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex items-center space-x-4">
-                                                        <Avatar className="h-12 w-12 ">
-                                                            <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                                                        <Avatar className="h-12 w-12">
+                                                            <AvatarFallback className="bg-muted text-primary font-semibold">
                                                                 {req.patientDetails.name[0].toUpperCase()}
                                                             </AvatarFallback>
                                                         </Avatar>
                                                         <div>
                                                             <h3 className="font-semibold text-lg flex items-center gap-2">
-                                                                <User className="h-4 w-4" />
+                                                                <User className="h-4 w-4 text-muted-foreground" />
                                                                 {req.patientDetails?.name}
                                                             </h3>
                                                             <Badge variant="secondary" className="text-xs">
@@ -294,7 +294,7 @@ const ReceptionistDashboard = () => {
                                                             <Clock className="h-3 w-3" />
                                                             {formatTime(req.timestamp)}
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-sm">
+                                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                             <Stethoscope className="h-3 w-3" />
                                                             Dr. {req.doctorDetails?.name}
                                                         </div>
@@ -359,19 +359,15 @@ const ReceptionistDashboard = () => {
                                                                             </div>
                                                                         )}
                                                                         {mediaBlobUrl && !localAudio[req.requestId]?.blob && (
-                                                                            <Button
-                                                                                type="button"
-                                                                                size="sm"
-                                                                                onClick={async () => {
-                                                                                    const response = await fetch(mediaBlobUrl);
-                                                                                    const blob = await response.blob();
-                                                                                    const uploaded = await uploadAudioToCloud(blob);
-                                                                                    if (uploaded) {
-                                                                                        setRequests(prev => prev.map(r => r.requestId === req.requestId ? { ...r, audioDetails: uploaded } : r));
-                                                                                        setLocalAudio(prev => ({ ...prev, [req.requestId]: { blob, url: uploaded.url, uploaded: true, audioDetails: uploaded } }));
-                                                                                    }
-                                                                                }}
-                                                                            >
+                                                                            <Button type="button" size="sm" onClick={async () => {
+                                                                                const response = await fetch(mediaBlobUrl);
+                                                                                const blob = await response.blob();
+                                                                                const uploaded = await uploadAudioToCloud(blob);
+                                                                                if (uploaded) {
+                                                                                    setRequests(prev => prev.map(r => r.requestId === req.requestId ? { ...r, audioDetails: uploaded } : r));
+                                                                                    setLocalAudio(prev => ({ ...prev, [req.requestId]: { blob, url: uploaded.url, uploaded: true, audioDetails: uploaded } }));
+                                                                                }
+                                                                            }}>
                                                                                 Attach Recording
                                                                             </Button>
                                                                         )}
@@ -385,7 +381,7 @@ const ReceptionistDashboard = () => {
                                                     )}
 
                                                     {editingIndex === idx ? (
-                                                        <div className="space-y-3">
+                                                        <div className="space-y-3 mt-4">
                                                             <div className="space-y-2">
                                                                 <Label htmlFor={`prescription-title-${idx}`}>Title</Label>
                                                                 <Input
@@ -420,25 +416,23 @@ const ReceptionistDashboard = () => {
                                                         <div>
                                                             {req.prescription && (req.prescription.title || req.prescription.details) ? (
                                                                 <div
-                                                                    className="bg-muted/50 rounded-lg p-4 cursor-pointer hover:bg-muted/70 transition-colors border border-dashed border-muted-foreground/25"
+                                                                    className="bg-muted rounded-lg p-4 cursor-pointer hover:bg-muted/70 transition-colors border border-dashed border-border"
                                                                     onClick={() => handleEditClick(idx, req.prescription)}
                                                                 >
                                                                     <div className="flex items-start justify-between">
                                                                         <p className="text-sm text-muted-foreground mb-2">Click to edit prescription</p>
                                                                         <Edit3 className="h-4 w-4 text-muted-foreground" />
                                                                     </div>
-                                                                    <h4 className="font-semibold">{req.prescription.title}</h4>
-                                                                    <p className="text-sm whitespace-pre-wrap">{req.prescription.details}</p>
+                                                                    <h4 className="font-semibold text-foreground">{req.prescription.title}</h4>
+                                                                    <p className="text-sm whitespace-pre-wrap text-foreground">{req.prescription.details}</p>
                                                                 </div>
                                                             ) : (
                                                                 <div
-                                                                    className="bg-muted/30 rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors border border-dashed border-muted-foreground/25"
+                                                                    className="bg-muted/70 rounded-lg p-4 cursor-pointer hover:bg-muted transition-colors border border-dashed border-border text-muted-foreground flex items-center justify-center gap-2"
                                                                     onClick={() => handleEditClick(idx, { title: "", details: "" })}
                                                                 >
-                                                                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                                                        <Edit3 className="h-4 w-4" />
-                                                                        <span className="text-sm">Click to add prescription details</span>
-                                                                    </div>
+                                                                    <Edit3 className="h-4 w-4" />
+                                                                    <span className="text-sm">Click to add prescription details</span>
                                                                 </div>
                                                             )}
                                                         </div>

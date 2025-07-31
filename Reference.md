@@ -36,7 +36,6 @@ UI changes include
   - Voice recording
   - AI Chat (Gemini)
 ### ❌ Missing / Left To Do
-- Edit uploaded files
 - Security enhancements (confirmation dialogs)
 - Profile editing
 
@@ -84,14 +83,13 @@ UI changes include
 
 ### ❌ Missing / Left To Do
 - Billing (optional)
-- Supports voice dictation for faster note-taking
 
 ---
 
 ## 🔐 General System Issues
 - No activity log
-- No dark mode
 - No security enhancements (confirmation dialogs for sensitive actions, etc.)
+- Better UI
 - Connect all the links in landing page to the correct pages.
 
 ---

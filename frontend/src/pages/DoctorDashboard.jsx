@@ -26,6 +26,7 @@ import {
     LogOut,
     Loader2
 } from "lucide-react";
+import { ModeToggle } from "@/components/Toggle";
 import "../index.css";
 
 const DoctorDashboard = () => {
@@ -201,10 +202,10 @@ const DoctorDashboard = () => {
 
     if (profileLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-muted">
-                <Card className="w-full max-w-md">
+            <div className="min-h-screen flex items-center justify-center bg-background">
+                <Card className="w-full max-w-md shadow-lg bg-card text-foreground border-border border">
                     <CardContent className="flex flex-col items-center justify-center p-8">
-                        <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
                         <p className="text-muted-foreground">Loading your dashboard...</p>
                     </CardContent>
                 </Card>
@@ -213,31 +214,31 @@ const DoctorDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen bg-muted p-4">
+        <div className="min-h-screen bg-background p-4">
             <div className="max-w-6xl mx-auto space-y-6">
-                <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                <Card className="border-0 shadow-lg bg-card text-foreground">
                     <CardHeader className="pb-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                <div className="p-3 bg-white/20 rounded-full">
-                                    <Stethoscope className="h-6 w-6" />
+                                <div className="p-3 bg-muted rounded-full">
+                                    <Stethoscope className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
                                     <CardTitle className="text-2xl font-bold">
                                         Welcome back, Dr. {profile?.name || 'Doctor'}
                                     </CardTitle>
-                                    <CardDescription className="text-blue-100 mt-1">
+                                    <CardDescription>
                                         Manage your patients and prescriptions
                                     </CardDescription>
                                 </div>
                             </div>
                             <div className="flex items-center space-x-2 text-sm">
-                                <Calendar className="h-4 w-4" />
-                                <span>{new Date().toLocaleDateString()}</span>
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-muted-foreground">{new Date().toLocaleDateString()}</span>
+                                <ModeToggle />
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    className="bg-white/10 border-white/20 hover:bg-white/20 text-white"
                                     onClick={() => navigate('/profile')}>
                                     <User className="h-4 w-4 mr-2" />
                                     Profile
@@ -248,9 +249,7 @@ const DoctorDashboard = () => {
                                     onClick={() => {
                                         localStorage.removeItem("token");
                                         navigate("/login");
-                                    }}
-                                    className="bg-white/10 border-white/20 hover:bg-white/20 text-white"
-                                >
+                                    }}>
                                     <LogOut className="h-4 w-4 mr-2" />
                                     Logout
                                 </Button>
@@ -259,13 +258,13 @@ const DoctorDashboard = () => {
                     </CardHeader>
                 </Card>
 
-                <Card className="shadow-lg">
+                <Card className="shadow-lg bg-card border border-border">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Search className="h-5 w-5" />
                             Patient Search
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-muted-foreground">
                             Enter a patient ID to view their details and manage prescriptions
                         </CardDescription>
                     </CardHeader>
@@ -290,7 +289,7 @@ const DoctorDashboard = () => {
 
                         {error && (
                             <Alert variant="destructive">
-                                <AlertCircle className="h-4 w-4" />
+                                <AlertCircle className="h-4 w-4 text-destructive" />
                                 <AlertDescription>{error}</AlertDescription>
                             </Alert>
                         )}
@@ -298,7 +297,7 @@ const DoctorDashboard = () => {
                 </Card>
 
                 {patient && !error && (
-                    <Card className="shadow-lg">
+                    <Card className="shadow-lg bg-card border border-border">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <User className="h-5 w-5" />
@@ -308,7 +307,7 @@ const DoctorDashboard = () => {
                         <CardContent>
                             <div className="flex items-center space-x-4 mb-6">
                                 <Avatar className="h-16 w-16">
-                                    <AvatarFallback className="text-lg font-semibold bg-blue-100 text-blue-600">
+                                    <AvatarFallback className="text-lg font-semibold bg-muted text-primary">
                                         {patient.name[0].toUpperCase()}
                                     </AvatarFallback>
                                 </Avatar>
@@ -316,11 +315,11 @@ const DoctorDashboard = () => {
                                     <div className="flex flex-wrap gap-4 text-sm">
                                         <div className="flex items-center gap-2">
                                             <User className="h-4 w-4 text-muted-foreground" />
-                                            <span className="font-medium">{patient.name}</span>
+                                            <span className="font-medium text-foreground">{patient.name}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Mail className="h-4 w-4 text-muted-foreground" />
-                                            <span>{patient.email}</span>
+                                            <span className="text-foreground">{patient.email}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <IdCard className="h-4 w-4 text-muted-foreground" />
@@ -333,7 +332,7 @@ const DoctorDashboard = () => {
                             <div className="flex gap-3">
                                 <Dialog open={showPatientModal} onOpenChange={setShowPatientModal}>
                                     <DialogTrigger asChild>
-                                        <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowPatientModal(true)} >
+                                        <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowPatientModal(true)}>
                                             <Eye className="h-4 w-4" />
                                             View Details
                                         </Button>
@@ -349,10 +348,10 @@ const DoctorDashboard = () => {
                                             {patient.files && patient.files.length > 0 ? (
                                                 <div className="space-y-2">
                                                     {patient.files.map((file, index) => (
-                                                        <div key={index} className="flex items-center justify-between p-3 rounded-lg border bg-muted/50">
+                                                        <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted">
                                                             <div className="flex items-center gap-3">
                                                                 <FileText className="h-4 w-4 text-muted-foreground" />
-                                                                <span className="text-sm font-medium truncate max-w-xs">
+                                                                <span className="text-sm font-medium truncate max-w-xs text-foreground">
                                                                     {file.filename}
                                                                 </span>
                                                             </div>
@@ -456,7 +455,7 @@ const DoctorDashboard = () => {
 
                                             {prescriptionError && (
                                                 <Alert variant="destructive">
-                                                    <AlertCircle className="h-4 w-4" />
+                                                    <AlertCircle className="h-4 w-4 text-destructive" />
                                                     <AlertDescription>{prescriptionError}</AlertDescription>
                                                 </Alert>
                                             )}

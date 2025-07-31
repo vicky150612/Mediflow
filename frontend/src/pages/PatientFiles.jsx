@@ -125,14 +125,14 @@ const PatientFiles = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4">
+        <div className="min-h-screen bg-background p-4 text-foreground">
             <div className="max-w-2xl mx-auto space-y-4">
                 <div className="flex items-center gap-3">
                     <Button
@@ -144,12 +144,12 @@ const PatientFiles = () => {
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-bold text-slate-900">Medical Reports</h1>
-                        <p className="text-sm text-slate-600">View and manage your reports</p>
+                        <h1 className="text-xl font-bold">Medical Reports</h1>
+                        <p className="text-sm text-muted-foreground">View and manage your reports</p>
                     </div>
                 </div>
 
-                <Card>
+                <Card className="bg-card text-foreground border border-border">
                     <CardContent className="pt-4">
                         <Button
                             onClick={() => setShowModal(true)}
@@ -166,9 +166,9 @@ const PatientFiles = () => {
                                 className="mt-3"
                             >
                                 {uploadMessage.includes('success') ? (
-                                    <CheckCircle className="h-4 w-4" />
+                                    <CheckCircle className="h-4 w-4 text-primary" />
                                 ) : (
-                                    <AlertCircle className="h-4 w-4" />
+                                    <AlertCircle className="h-4 w-4 text-destructive" />
                                 )}
                                 <AlertDescription className="text-sm">{uploadMessage}</AlertDescription>
                             </Alert>
@@ -176,7 +176,7 @@ const PatientFiles = () => {
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card text-foreground border border-border">
                     <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-base flex items-center gap-2">
@@ -190,7 +190,7 @@ const PatientFiles = () => {
                     </CardHeader>
                     <CardContent className="pt-2">
                         {files.length === 0 ? (
-                            <div className="text-center py-6 text-slate-500">
+                            <div className="text-center py-6 text-muted-foreground">
                                 <FileText className="h-8 w-8 mx-auto mb-2 opacity-30" />
                                 <p className="text-sm">No reports uploaded yet</p>
                             </div>
@@ -199,12 +199,12 @@ const PatientFiles = () => {
                                 {files.map(file => (
                                     <div
                                         key={file._id}
-                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 group"
+                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-muted group transition-colors"
                                     >
                                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                                            <FileText className="h-4 w-4 text-slate-500" />
+                                            <FileText className="h-4 w-4 text-muted-foreground" />
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-slate-900 truncate">
+                                                <p className="font-medium text-foreground truncate select-text">
                                                     {file.filename}
                                                 </p>
                                             </div>
@@ -223,10 +223,10 @@ const PatientFiles = () => {
                                                 size="sm"
                                                 onClick={() => handleDelete(file._id)}
                                                 disabled={deletingId === file._id}
-                                                className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                className="h-8 px-2 text-destructive hover:text-destructive/90 hover:bg-destructive/10 transition-colors"
                                             >
                                                 {deletingId === file._id ? (
-                                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                                    <Loader2 className="h-3 w-3 animate-spin text-destructive" />
                                                 ) : (
                                                     <Trash2 className="h-3 w-3" />
                                                 )}
@@ -240,7 +240,7 @@ const PatientFiles = () => {
                 </Card>
 
                 <Dialog open={showModal} onOpenChange={setShowModal}>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="sm:max-w-md bg-card text-foreground border border-border">
                         <DialogHeader>
                             <DialogTitle className="text-base flex items-center gap-2">
                                 <Upload className="h-4 w-4" />
@@ -268,7 +268,7 @@ const PatientFiles = () => {
                                     onChange={handleFileChange}
                                     required
                                     disabled={disabled}
-                                    className="file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200"
+                                    className="file:mr-2 file:px-2 file:py-1 file:rounded file:border-0 file:bg-muted file:text-foreground hover:file:bg-muted/80"
                                 />
                             </div>
                             <div className="flex gap-2">

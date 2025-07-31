@@ -140,7 +140,7 @@ const PatientAccesslist = () => {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4">
+        <div className="min-h-screen bg-background p-4 text-foreground">
             <div className="max-w-2xl mx-auto space-y-4">
                 <div className="flex items-center gap-3">
                     <Button
@@ -152,12 +152,12 @@ const PatientAccesslist = () => {
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-bold text-slate-900">Access Control</h1>
-                        <p className="text-sm text-slate-600">Manage doctor permissions</p>
+                        <h1 className="text-xl font-bold">Access Control</h1>
+                        <p className="text-sm text-muted-foreground">Manage doctor permissions</p>
                     </div>
                 </div>
 
-                <Card>
+                <Card className="bg-card text-foreground border border-border">
                     <CardContent className="pt-4">
                         <form onSubmit={handleAddDoctor} className="flex gap-2">
                             <Input
@@ -174,7 +174,7 @@ const PatientAccesslist = () => {
                                 className="px-4"
                             >
                                 {addingDoctor ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                 ) : (
                                     <UserPlus className="h-4 w-4" />
                                 )}
@@ -182,14 +182,14 @@ const PatientAccesslist = () => {
                         </form>
                         {error && (
                             <Alert variant="destructive" className="mt-3">
-                                <AlertCircle className="h-4 w-4" />
+                                <AlertCircle className="h-4 w-4 text-destructive" />
                                 <AlertDescription className="text-sm">{error}</AlertDescription>
                             </Alert>
                         )}
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="bg-card text-foreground border border-border">
                     <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-base flex items-center gap-2">
@@ -204,10 +204,10 @@ const PatientAccesslist = () => {
                     <CardContent className="pt-2">
                         {loading ? (
                             <div className="flex justify-center py-6">
-                                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+                                <Loader2 className="h-8 w-8 text-primary animate-spin" />
                             </div>
                         ) : list.length === 0 ? (
-                            <div className="text-center py-6 text-slate-500">
+                            <div className="text-center py-6 text-muted-foreground">
                                 <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
                                 <p className="text-sm">No doctors added yet</p>
                             </div>
@@ -216,14 +216,14 @@ const PatientAccesslist = () => {
                                 {list.map(doc => (
                                     <div
                                         key={doc.doctor}
-                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 group"
+                                        className="flex items-center justify-between p-3 rounded-lg hover:bg-muted group transition-colors"
                                     >
                                         <div
                                             className="flex-1 cursor-pointer"
                                             onClick={() => handleDoctorModal(doc.doctor)}
                                         >
-                                            <p className="font-medium text-slate-900">{doc.doctor}</p>
-                                            <p className="text-xs text-slate-500">Click to view details</p>
+                                            <p className="font-medium text-foreground select-text">{doc.doctor}</p>
+                                            <p className="text-xs text-muted-foreground">Click to view details</p>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Button
@@ -239,10 +239,10 @@ const PatientAccesslist = () => {
                                                 size="sm"
                                                 onClick={() => handleRemoveDoctor(doc.doctor)}
                                                 disabled={removingId === doc.doctor}
-                                                className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                className="h-8 px-2 text-destructive hover:text-destructive/90 hover:bg-destructive/10 transition-colors"
                                             >
                                                 {removingId === doc.doctor ? (
-                                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                                    <Loader2 className="h-3 w-3 animate-spin text-destructive" />
                                                 ) : (
                                                     <Trash2 className="h-3 w-3" />
                                                 )}
@@ -257,31 +257,31 @@ const PatientAccesslist = () => {
 
                 {/* Doctor Details Modal */}
                 <Dialog open={showDoctorModal} onOpenChange={setShowDoctorModal}>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent className="sm:max-w-md bg-card text-foreground border border-border">
                         <DialogHeader>
                             <DialogTitle className="text-base">Doctor Details</DialogTitle>
                         </DialogHeader>
                         {doctorDetails ? (
                             <div className="space-y-3 text-sm">
                                 <div className="grid grid-cols-3 gap-2">
-                                    <span className="text-slate-600">Name:</span>
+                                    <span className="text-muted-foreground">Name:</span>
                                     <span className="col-span-2 font-medium">{doctorDetails.name || 'N/A'}</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
-                                    <span className="text-slate-600">Email:</span>
+                                    <span className="text-muted-foreground">Email:</span>
                                     <span className="col-span-2 font-medium">{doctorDetails.email || 'N/A'}</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
-                                    <span className="text-slate-600">Reg. No:</span>
+                                    <span className="text-muted-foreground">Reg. No:</span>
                                     <span className="col-span-2 font-medium">{doctorDetails.registrationNumber || 'N/A'}</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-2">
-                                    <span className="text-slate-600">ID:</span>
-                                    <span className="col-span-2 font-mono text-xs">{doctorDetails._id || 'N/A'}</span>
+                                    <span className="text-muted-foreground">ID:</span>
+                                    <span className="col-span-2 font-mono text-xs select-text">{doctorDetails._id || 'N/A'}</span>
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center py-4 text-slate-500 text-sm">
+                            <div className="text-center py-4 text-muted-foreground text-sm">
                                 <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                 <p>No details available</p>
                             </div>
