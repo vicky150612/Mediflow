@@ -2,6 +2,7 @@ import express from 'express';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { connectDB } from '../db.js';
 import { ObjectId } from 'mongodb';
+import { Logger } from '../Utils/Logger.js';
 
 const router = express.Router();
 
@@ -17,10 +18,12 @@ router.get('/detailes/:id', async (req, res) => {
                 message: 'No doctor found'
             });
         }
-        res.status(200).json({
+        const response = {
             success: true,
             data: doctor,
-        });
+        };
+        Logger(`Doctor details fetched successfully for ID: ${doctorId}`);
+        res.status(200).json(response);
     } catch (error) {
         console.error('Error fetching doctor:', error);
         res.status(500).json({
@@ -49,6 +52,7 @@ router.put('/receptionist', authMiddleware, async (req, res) => {
             });
         }
         await db.collection('users').updateOne({ _id: new ObjectId(req.user.id) }, { $set: { receptionist: receptionistId } });
+        Logger(`Receptionist updated successfully for doctor ID: ${req.user.id}`);
         res.status(200).json({
             success: true,
             message: 'Receptionist changed successfully',

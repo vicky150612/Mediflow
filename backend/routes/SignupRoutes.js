@@ -4,6 +4,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '../db.js';
 import sendEmail from '../Email.js';
+import { Logger } from '../Utils/Logger.js';
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ router.post('/send-code', async (req, res) => {
         // auto-expire after 10 minutes
         verificationCodes.set(email, code.toString());
         setTimeout(() => verificationCodes.delete(email), 10 * 60 * 1000);
+        Logger(`Verification code sent to: ${email}`);
         return res.json({ message: 'Code sent' });
     } catch (err) {
         console.error('Email send error', err);
@@ -65,8 +67,9 @@ router.post('/', async (req, res) => {
         if (role === 'doctor') {
             newUser.registrationNumber = registrationNumber;
         }
-        await db.collection('users').insertOne(newUser);
-        res.status(201).json({ message: 'User registered successfully', user: newUser });
+        const result = await db.collection('users').insertOne(newUser);
+        Logger(`New user registered: ${email} with role: ${role}`);
+        res.status(201).json({ message: 'User registered successfully', user: { ...newUser, _id: result.insertedId } });
     } catch (error) {
         console.error('Error during registration:', error);
         res.status(500).json({ message: 'Internal server error' });

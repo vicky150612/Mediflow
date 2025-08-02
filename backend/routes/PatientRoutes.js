@@ -3,6 +3,7 @@ import { connectDB } from '../db.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { ObjectId } from 'mongodb';
 import cloudinary from 'cloudinary';
+import { Logger } from '../Utils/Logger.js';
 
 const router = express.Router();
 
@@ -18,11 +19,13 @@ router.get("/files", authMiddleware, async (req, res) => {
                 message: 'No files found for this user'
             });
         }
-        res.status(200).json({
+        const response = {
             success: true,
             data: files,
             count: files.length
-        });
+        };
+        Logger(`Fetched ${files.length} files for user: ${req.user.id}`);
+        res.status(200).json(response);
     } catch (error) {
         console.error('Error fetching files:', error);
         res.status(500).json({
@@ -51,6 +54,7 @@ router.delete("/file/:fileId", authMiddleware, async (req, res) => {
             console.log(result, error);
         });
         await db.collection('files').deleteOne({ _id: new ObjectId(fileId), user: userId });
+        Logger(`File deleted successfully. File ID: ${fileId}, User ID: ${userId}`);
         res.status(200).json({
             success: true,
             message: 'File deleted successfully'
@@ -79,6 +83,7 @@ router.get("/accesslist", authMiddleware, async (req, res) => {
                 message: 'No access list found for this patient'
             });
         }
+        Logger(`Fetched access list for user: ${userId}, found ${accessList.length} entries`);
         res.status(200).json({
             success: true,
             data: accessList,
@@ -123,6 +128,7 @@ router.post("/doc", authMiddleware, async (req, res) => {
             });
         }
         await db.collection('accessList').insertOne({ user: userId, doctor: doctorId });
+        Logger(`Doctor ${doctorId} added to access list for user: ${userId}`);
         res.status(200).json({
             success: true,
             message: 'Doctor added to access list',
@@ -147,7 +153,8 @@ router.delete("/doc/:doctorId", authMiddleware, async (req, res) => {
         const doctorId = String(req.params.doctorId);
         console.log(userId, doctorId)
 
-        const reply = await db.collection('accessList').deleteOne({ user: userId, doctor: doctorId });
+        await db.collection('accessList').deleteOne({ user: userId, doctor: doctorId });
+        Logger(`Doctor ${doctorId} removed from access list for user: ${userId}`);
         res.status(200).json({
             success: true,
             message: 'Doctor removed from access list',
@@ -212,6 +219,8 @@ router.get("/details", authMiddleware, async (req, res) => {
         // Remove sensitive fields before sending
         const { password, ...patientDetails } = patient;
         patientDetails.files = await db.collection('files').find({ user: patientId }).toArray();
+        patientDetails.prescriptions = await db.collection('prescriptions').find({ user: patientId }).toArray();
+        Logger(`Patient details fetched for patient: ${patientId} by user: ${requesterId}`);
         res.status(200).json({
             success: true,
             data: patientDetails

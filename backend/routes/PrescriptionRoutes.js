@@ -3,6 +3,8 @@ import { connectDB } from '../db.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { ObjectId } from 'mongodb';
 import cloudinary from 'cloudinary';
+import { Logger } from '../Utils/Logger.js';
+
 const router = express.Router();
 
 // Get prescriptions
@@ -17,11 +19,13 @@ router.get('/', authMiddleware, async (req, res) => {
                 message: 'No prescriptions found for this user'
             });
         }
-        res.status(200).json({
+        const response = {
             success: true,
             data: prescriptions,
             count: prescriptions.length
-        });
+        };
+        Logger(`Fetched ${prescriptions.length} prescriptions for user: ${req.user.id}`);
+        res.status(200).json(response);
     } catch (error) {
         console.error('Error fetching prescriptions:', error);
         res.status(500).json({
@@ -56,6 +60,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
             { $set: { status: status } }
         );
 
+        Logger(`Prescription ${id} status updated to ${status} by user: ${req.user.id}`);
         res.status(200).json({ success: true, message: 'Prescription status updated successfully.' });
     } catch (error) {
         console.error('Error updating prescription status:', error);
@@ -85,6 +90,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
             const result = await cloudinary.v2.uploader.destroy(publicId, { resource_type: "video", type: "upload" });
         }
         await db.collection('prescriptions').deleteOne({ _id: new ObjectId(id) });
+        Logger(`Prescription ${id} deleted by user: ${req.user.id}`);
         res.status(200).json({ success: true, message: 'Prescription deleted successfully.' });
     } catch (error) {
         console.error('Error deleting prescription:', error);

@@ -10,8 +10,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { io } from "socket.io-client";
-import { ReactMediaRecorder } from "react-media-recorder";
 import {
     Search,
     User,
@@ -27,6 +25,8 @@ import {
     Loader2
 } from "lucide-react";
 import { ModeToggle } from "@/components/Toggle";
+import { ReactMediaRecorder } from "react-media-recorder";
+import { io } from "socket.io-client";
 import "../index.css";
 
 const DoctorDashboard = () => {
@@ -35,6 +35,7 @@ const DoctorDashboard = () => {
     const [search, setSearch] = useState('');
     const [patient, setPatient] = useState(null);
     const [showPatientModal, setShowPatientModal] = useState(false);
+    const [selectedTab, setSelectedTab] = useState('files');
     const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
     const [error, setError] = useState('');
     const [profileLoading, setProfileLoading] = useState(true);
@@ -199,6 +200,10 @@ const DoctorDashboard = () => {
         setPrescriptionError("");
         setPrescriptionSuccess("");
     };
+    const openPatientModal = () => {
+        setSelectedTab('files');
+        setShowPatientModal(true);
+    };
 
     if (profileLoading) {
         return (
@@ -332,50 +337,102 @@ const DoctorDashboard = () => {
                             <div className="flex gap-3">
                                 <Dialog open={showPatientModal} onOpenChange={setShowPatientModal}>
                                     <DialogTrigger asChild>
-                                        <Button variant="outline" className="flex items-center gap-2" onClick={() => setShowPatientModal(true)}>
+                                        <Button variant="outline" className="flex items-center gap-2" onClick={openPatientModal}>
                                             <Eye className="h-4 w-4" />
                                             View Details
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="max-w-2xl max-h-[80vh]">
+                                    <DialogContent className="max-w-3xl h-[80vh] flex flex-col overflow-hidden">
                                         <DialogHeader>
-                                            <DialogTitle className="flex items-center gap-2">
-                                                <FileText className="h-4 w-4" />
-                                                Medical Files
-                                            </DialogTitle>
+                                            <DialogTitle>Patient Details</DialogTitle>
                                         </DialogHeader>
-                                        <ScrollArea className="max-h-[60vh]">
-                                            {patient.files && patient.files.length > 0 ? (
-                                                <div className="space-y-2">
-                                                    {patient.files.map((file, index) => (
-                                                        <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted">
-                                                            <div className="flex items-center gap-3">
-                                                                <FileText className="h-4 w-4 text-muted-foreground" />
-                                                                <span className="text-sm font-medium truncate max-w-xs text-foreground">
-                                                                    {file.filename}
-                                                                </span>
-                                                            </div>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                asChild
-                                                            >
-                                                                <a
-                                                                    href={file.url}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="flex items-center gap-1"
-                                                                >
-                                                                    <Eye className="h-3 w-3" />
-                                                                    View
-                                                                </a>
-                                                            </Button>
+                                        <div className="flex border-b border-border pb-2 flex-shrink-0">
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedTab('files')}
+                                                className={`px-4 py-2 -mb-px border-b-2 font-medium text-sm ${selectedTab === 'files'
+                                                    ? 'border-primary text-primary'
+                                                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                                                    }`}
+                                            >
+                                                Medical Files
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedTab('prescriptions')}
+                                                className={`px-4 py-2 -mb-px border-b-2 font-medium text-sm ${selectedTab === 'prescriptions'
+                                                    ? 'border-primary text-primary'
+                                                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                                                    }`}
+                                            >
+                                                Prescriptions
+                                            </button>
+                                        </div>
+                                        <ScrollArea className="flex-1 overflow-y-auto">
+                                            <div className="pr-4">
+                                            {selectedTab === 'files' && (
+                                                <>
+                                                    {patient.files && patient.files.length > 0 ? (
+                                                        <div className="space-y-2">
+                                                            {patient.files.map((file, index) => (
+                                                                <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <FileText className="h-4 w-4 text-muted-foreground" />
+                                                                        <span className="text-sm font-medium truncate max-w-xs text-foreground">
+                                                                            {file.filename}
+                                                                        </span>
+                                                                    </div>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        asChild
+                                                                    >
+                                                                        <a
+                                                                            href={file.url}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="flex items-center gap-1"
+                                                                        >
+                                                                            <Eye className="h-3 w-3" />
+                                                                            View
+                                                                        </a>
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <p className="text-muted-foreground text-sm">No files available</p>
+                                                    ) : (
+                                                        <p className="text-muted-foreground text-sm">No files available</p>
+                                                    )}
+                                                </>
                                             )}
+
+                                            {selectedTab === 'prescriptions' && (
+                                                <>
+                                                    {patient.prescriptions && patient.prescriptions.length > 0 ? (
+                                                        <div className="space-y-3">
+                                                            {patient.prescriptions.map((presc, idx) => (
+                                                                <div
+                                                                    key={presc._id || idx}
+                                                                    className="p-4 rounded-lg border border-border bg-muted flex flex-col gap-1"
+                                                                >
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="font-medium text-foreground">{presc.title}</span>
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            {presc.date ? new Date(presc.date).toLocaleDateString() : ''}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="text-sm text-muted-foreground whitespace-pre-line">
+                                                                        {presc.details}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-muted-foreground text-sm">No prescriptions available</p>
+                                                    )}
+                                                </>
+                                            )}
+                                            </div>
                                         </ScrollArea>
                                     </DialogContent>
                                 </Dialog>

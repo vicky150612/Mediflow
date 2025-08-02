@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { connectDB } from '../db.js';
 import sendEmail from '../Email.js';
+import { Logger } from '../Utils/Logger.js';
 
 const router = express.Router();
 
@@ -24,9 +25,11 @@ router.post('/', async (req, res) => {
         if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
         if (user.role === 'doctor') {
             const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role, receptionist: user.receptionist }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            Logger(`Doctor login successful: ${user._id}`);
             return res.status(200).json({ message: 'Login successful', token, user: { id: user._id, name: user.name, email: user.email, role: user.role, registrationNumber: user.registrationNumber, receptionist: user.receptionist } });
         }
         const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        Logger(`${user.role} login successful: ${user._id}`);
         return res.status(200).json({ message: 'Login successful', token, user: { id: user._id, name: user.name, email: user.email, role: user.role, registrationNumber: user.registrationNumber } });
     } catch (error) {
         console.error('Error during login:', error);
@@ -52,6 +55,7 @@ router.post("/reset-code", async (req, res) => {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         verificationCodes.set(email, code);
         await sendEmail(email, code);
+        Logger(`Password reset code sent to: ${email}`);
         return res.json({ message: 'Password reset code sent successfully' });
     } catch (error) {
         console.error('Error sending password reset code:', error);
@@ -78,6 +82,7 @@ router.post('/reset-password', async (req, res) => {
         const hashed = await bcrypt.hash(newPassword, 10);
         await db.collection('users').updateOne({ email }, { $set: { password: hashed } });
         verificationCodes.delete(email);
+        Logger(`Password reset successful for: ${user._id}`);
         return res.json({ message: 'Password reset successful' });
     } catch (error) {
         console.error('Error resetting password:', error);

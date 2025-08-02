@@ -3,6 +3,7 @@ import multer from 'multer';
 import cloudinary from 'cloudinary';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { connectDB } from '../db.js';
+import { Logger } from '../Utils/Logger.js';
 
 const uploadRouter = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -22,6 +23,7 @@ uploadRouter.post('/audio', authMiddleware, upload.single('audio'), (req, res) =
             console.log("Error uploading audio", error);
             return res.status(500).json({ message: 'Error uploading audio', cloudinaryError: error.message || error });
         }
+        Logger(`Audio file uploaded successfully. File: ${req.body.filename}, Type: ${result.resource_type} by user: ${req.user.id}`);
         return res.json({ url: result.secure_url, public_id: result.public_id, format: result.format });
     });
     stream.end(req.file.buffer);
@@ -46,11 +48,10 @@ uploadRouter.post('/', authMiddleware, upload.single('file'), (req, res) => {
             resource_type: result.resource_type,
             created_at: new Date(result.created_at),
         });
+        Logger(`File uploaded successfully. File: ${req.body.filename}, Type: ${result.resource_type} by user: ${req.user.id}`);
         return res.json(result);
     });
     stream.end(req.file.buffer);
-
-    console.log("File uploaded successfully");
 });
 
 export default uploadRouter;
