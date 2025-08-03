@@ -62,6 +62,7 @@ router.post('/', async (req, res) => {
             name,
             email,
             password: hashedPassword,
+            createdAt: new Date(),
             role,
         };
         if (role === 'doctor') {

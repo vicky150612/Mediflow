@@ -29,7 +29,15 @@ const RotatingDoctor = () => {
     );
 };
 
-const Doctor3D = () => {
+const Doctor3D = ({ onLoad }) => {
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            onLoad?.();
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [onLoad]);
+
     return (
         <div className="w-full max-w-md h-[60vh] md:h-[70vh] flex items-center justify-center">
             <Canvas className="w-full h-full bg-transparent">

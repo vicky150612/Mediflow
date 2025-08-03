@@ -43,9 +43,14 @@ const Dashboard = () => {
             </div>
         );
     };
+    console.log(role);
     if (role === 'doctor') return <DoctorDashboard />;
     if (role === 'patient') return <PatientDashboard />;
     if (role === 'receptionist') return <ReceptionistDashboard />;
+    if (role === 'NONE') {
+        navigate('/complete-profile');
+        return null;
+    }
     navigate('/login');
     return null;
 };

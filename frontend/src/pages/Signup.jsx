@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import {
     InputOTPSlot,
 } from "@/components/ui/input-otp";
 import "../index.css";
+import { GoogleLogin } from "@react-oauth/google";
 
 const Signup = () => {
     const backendUrl = import.meta.env.VITE_Backend_URL;
@@ -22,6 +24,31 @@ const Signup = () => {
     const [formData, setFormData] = useState({});
     const [inputCode, setInputCode] = useState('');
     const [sending, setSending] = useState(false);
+
+    const handleGoogle = async (credentialResponse) => {
+        setError('');
+        try {
+            const res = await fetch(`${backendUrl}/auth/google`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: credentialResponse.credential }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                localStorage.setItem('token', data.token);
+                if (data.needsMoreInfo) {
+                    navigate('/complete-profile');
+                } else {
+                    navigate('/dashboard');
+                }
+            } else {
+                const result = await res.json();
+                setError(result.message || 'Google signup failed');
+            }
+        } catch (err) {
+            setError('Google signup error');
+        }
+    };
 
     const requestCode = async (email) => {
         try {
@@ -107,102 +134,112 @@ const Signup = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-muted">
             <Card className="w-full max-w-md p-8 flex flex-col gap-6 shadow-lg">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
-                    <CardDescription>Sign up to get started with Mediflow</CardDescription>
+                <CardHeader>
+                    <div className="flex items-center gap-3">
+                        <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="p-2">
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                        <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+                    </div>
+                    <CardDescription>Enter your details to get started</CardDescription>
                 </CardHeader>
 
                 {step === 1 && (
-                    <form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
-                        <div className="flex gap-4 mb-2 flex-wrap justify-center">
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value="patient"
-                                    checked={role === 'patient'}
-                                    onChange={() => setRole('patient')}
-                                    className="accent-indigo-600 mr-2"
-                                />
-                                <span className="text-gray-700">Patient</span>
-                            </label>
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value="doctor"
-                                    checked={role === 'doctor'}
-                                    onChange={() => setRole('doctor')}
-                                    className="accent-indigo-600 mr-2"
-                                />
-                                <span className="text-gray-700">Doctor</span>
-                            </label>
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="role"
-                                    value="receptionist"
-                                    checked={role === 'receptionist'}
-                                    onChange={() => setRole('receptionist')}
-                                    className="accent-indigo-600 mr-2"
-                                />
-                                <span className="text-gray-700">Receptionist</span>
-                            </label>
-                        </div>
+                    <>
+                        <form onSubmit={handleSignupSubmit} className="flex flex-col gap-4">
+                            <div className="flex gap-4 mb-2 flex-wrap justify-center">
+                                <label className="flex items-center cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="patient"
+                                        checked={role === 'patient'}
+                                        onChange={() => setRole('patient')}
+                                        className="accent-indigo-600 mr-2"
+                                    />
+                                    <span className="text-gray-700">Patient</span>
+                                </label>
+                                <label className="flex items-center cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="doctor"
+                                        checked={role === 'doctor'}
+                                        onChange={() => setRole('doctor')}
+                                        className="accent-indigo-600 mr-2"
+                                    />
+                                    <span className="text-gray-700">Doctor</span>
+                                </label>
+                                <label className="flex items-center cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="role"
+                                        value="receptionist"
+                                        checked={role === 'receptionist'}
+                                        onChange={() => setRole('receptionist')}
+                                        className="accent-indigo-600 mr-2"
+                                    />
+                                    <span className="text-gray-700">Receptionist</span>
+                                </label>
+                            </div>
 
-                        <div className="flex flex-col gap-1">
-                            <label htmlFor="name" className="font-medium">Name</label>
-                            <Input
-                                type="text"
-                                name="name"
-                                id="name"
-                                required
-                                placeholder="Your Name"
-                                autoComplete="name"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                            <label htmlFor="email" className="font-medium">Email</label>
-                            <Input
-                                type="email"
-                                name="email"
-                                id="email"
-                                required
-                                placeholder="you@example.com"
-                                autoComplete="email"
-                            />
-                        </div>
-
-                        {role === 'doctor' && (
                             <div className="flex flex-col gap-1">
-                                <label htmlFor="registrationNumber" className="font-medium">Registration Number</label>
+                                <label htmlFor="name" className="font-medium">Name</label>
                                 <Input
                                     type="text"
-                                    name="registrationNumber"
-                                    id="registrationNumber"
-                                    required={role === 'doctor'}
-                                    placeholder="Doctor Reg. No."
+                                    name="name"
+                                    id="name"
+                                    required
+                                    placeholder="Your Name"
+                                    autoComplete="name"
                                 />
                             </div>
-                        )}
 
-                        <div className="flex flex-col gap-1">
-                            <label htmlFor="password" className="font-medium">Password</label>
-                            <Input
-                                type="password"
-                                name="password"
-                                id="password"
-                                required
-                                placeholder="••••••••"
-                                autoComplete="new-password"
-                            />
+                            <div className="flex flex-col gap-1">
+                                <label htmlFor="email" className="font-medium">Email</label>
+                                <Input
+                                    type="email"
+                                    name="email"
+                                    id="email"
+                                    required
+                                    placeholder="you@example.com"
+                                    autoComplete="email"
+                                />
+                            </div>
+
+                            {role === 'doctor' && (
+                                <div className="flex flex-col gap-1">
+                                    <label htmlFor="registrationNumber" className="font-medium">Registration Number</label>
+                                    <Input
+                                        type="text"
+                                        name="registrationNumber"
+                                        id="registrationNumber"
+                                        required={role === 'doctor'}
+                                        placeholder="Doctor Reg. No."
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex flex-col gap-1">
+                                <label htmlFor="password" className="font-medium">Password</label>
+                                <Input
+                                    type="password"
+                                    name="password"
+                                    id="password"
+                                    required
+                                    placeholder="••••••••"
+                                    autoComplete="new-password"
+                                />
+                            </div>
+
+                            <Button type="submit" className="w-full" disabled={sending}>
+                                {sending ? 'Sending code...' : 'Signup'}
+                            </Button>
+                        </form>
+                        <div className="flex justify-center mt-4">
+                            <GoogleLogin onSuccess={handleGoogle} onError={() => setError('Google signup error')} />
                         </div>
-
-                        <Button type="submit" className="w-full" disabled={sending}>
-                            {sending ? 'Sending code...' : 'Signup'}
-                        </Button>
-                    </form>
+                    </>
                 )}
 
                 {step === 2 && (

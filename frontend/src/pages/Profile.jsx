@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import ResetPasswordDialog from "../components/ResetPasswordDialog";
 
 const Profile = () => {
     const [profile, setProfile] = useState(null);
@@ -257,15 +256,6 @@ const Profile = () => {
                     )}
                 </CardContent>
 
-                {profile && (
-                    <div className="px-6 pb-6">
-                        <Separator className="my-6" />
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold">Reset Password</h3>
-                            <ResetPasswordDialog email={profile.email} />
-                        </div>
-                    </div>
-                )}
                 {profile && (
                     <CardFooter className="flex flex-col gap-3 pt-6 border-t">
                         <Button

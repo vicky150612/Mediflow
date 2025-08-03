@@ -10,6 +10,8 @@ UI changes include
 - Patient Dashboard, Files, Access List, Prescription
 - Profile Page
 
+Google auth integrated
+
 ## 🧑‍⚕️ Patient Functionality
 
 ### ✅ Implemented
@@ -86,7 +88,6 @@ UI changes include
 ---
 
 ## 🔐 General System Issues
-- No security enhancements (confirmation dialogs for sensitive actions, etc.)
 - Better UI
 - Connect all the links in landing page to the correct pages.
 
