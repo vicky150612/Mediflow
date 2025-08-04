@@ -38,8 +38,6 @@ Google auth integrated
   - Voice recording
   - AI Chat (Gemini)
 ### ❌ Missing / Left To Do
-- Security enhancements (confirmation dialogs)
-- Profile editing
 
 ---
 
@@ -83,12 +81,10 @@ Google auth integrated
   - Voice recording
 
 ### ❌ Missing / Left To Do
-- Billing (optional)
 
 ---
 
 ## 🔐 General System Issues
 - Better UI
-- Connect all the links in landing page to the correct pages.
 
 ---

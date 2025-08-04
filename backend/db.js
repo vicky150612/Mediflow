@@ -11,7 +11,7 @@ let db;
 export async function connectDB() {
     if (!db) {
         await client.connect();
-        db = client.db("zense");
+        db = client.db("Mediflow");
     }
     return db;
 }
