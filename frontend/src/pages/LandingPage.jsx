@@ -1,5 +1,5 @@
 import "../index.css";
-import Doctor3D from "../components/Doctor3D.jsx";
+import Doctor3D from "../components/Doctor3d.jsx";
 import { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
